@@ -1,5 +1,7 @@
 from pathlib import Path
+
 from ..filesystem import read_site, write_site
+
 
 def build():
 	root_dir = Path.cwd()

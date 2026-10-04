@@ -1,7 +1,9 @@
 from os import chdir as set_working_dir
 from pathlib import Path
 from tempfile import TemporaryDirectory
+
 from websites.commands import build, create
+
 
 def test_builds_single_page():
 	with TemporaryDirectory() as tempdir:
@@ -23,6 +25,7 @@ def test_builds_single_page():
 		contents = about_document_file.read_text()
 
 		assert contents == "<h1>About</h1>"
+
 
 def test_builds_single_index_page():
 	with TemporaryDirectory() as tempdir:

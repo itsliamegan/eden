@@ -1,5 +1,6 @@
 from enum import Enum, auto
 
+
 class Permalink:
 	@staticmethod
 	def root():
@@ -20,10 +21,7 @@ class Permalink:
 		if not isinstance(other, Permalink):
 			return NotImplemented
 
-		return (
-			self.kind == other.kind and
-			self.components == other.components
-		)
+		return self.kind == other.kind and self.components == other.components
 
 	def __str__(self):
 		if len(self.components) == 0:
@@ -36,6 +34,7 @@ class Permalink:
 			path += "/"
 
 		return path
+
 
 class Kind(Enum):
 	INDEX = auto()

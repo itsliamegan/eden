@@ -1,4 +1,5 @@
-from websites.template import compile, formats, Registry
+from websites.template import Registry, compile, formats
+
 
 def test_renders_evaluated_handlebars():
 	registry = Registry()

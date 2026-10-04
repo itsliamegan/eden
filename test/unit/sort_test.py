@@ -1,5 +1,6 @@
 from websites.sort import Sort
 
+
 def test_doesnt_sort():
 	class Person:
 		def __init__(self, name):
@@ -13,6 +14,7 @@ def test_doesnt_sort():
 
 	assert sorted_people == [alice, bob]
 
+
 def test_sorts_ascending_by_attribute():
 	class Person:
 		def __init__(self, name):
@@ -25,6 +27,7 @@ def test_sorts_ascending_by_attribute():
 	sorted_people = sort(people)
 
 	assert sorted_people == [alice, bob]
+
 
 def test_sorts_descending_by_attribute():
 	class Person:

@@ -1,5 +1,6 @@
 from shutil import rmtree
 
+
 def write_site(public_dir, site):
 	if public_dir.exists():
 		rmtree(public_dir)
@@ -8,6 +9,7 @@ def write_site(public_dir, site):
 
 	for document in site.documents:
 		write_document(public_dir, document)
+
 
 def write_document(public_dir, document):
 	file = public_dir.joinpath(*document.permalink.components)

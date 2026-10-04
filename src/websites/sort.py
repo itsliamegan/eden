@@ -11,9 +11,11 @@ class Sort:
 	def descending_by(attr):
 		return DescendingBy(attr)
 
+
 class Default:
 	def __call__(self, iter):
 		return iter
+
 
 class AscendingBy:
 	def __init__(self, attr):
@@ -21,6 +23,7 @@ class AscendingBy:
 
 	def __call__(self, iter):
 		return sorted(iter, key=lambda item: getattr(item, self.attr))
+
 
 class DescendingBy:
 	def __init__(self, attr):

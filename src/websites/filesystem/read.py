@@ -1,6 +1,8 @@
 from toml import loads as parse_toml
-from ..resource import Site, Collection, Page, Layout
+
+from ..resource import Collection, Layout, Page, Site
 from ..template import compile, formats
+
 
 def read_site(root_dir):
 	src_dir = root_dir.joinpath("src")
@@ -24,6 +26,7 @@ def read_site(root_dir):
 
 	return site
 
+
 def read_collection(dir, container):
 	metadata_file = dir.joinpath("metadata.toml")
 	if metadata_file.exists():
@@ -40,17 +43,20 @@ def read_collection(dir, container):
 
 	return collection
 
+
 def read_page(file, container):
 	name = file.stem
 	metadata, template = read_template_parts(file)
 
 	return Page(name, metadata, template, container)
 
+
 def read_layout(file):
 	name = file.stem
-	metadata, template = read_template_parts(file)
+	_metadata, template = read_template_parts(file)
 
 	return Layout(name, template)
+
 
 def read_template_parts(file):
 	source = file.read_text()
@@ -61,11 +67,13 @@ def read_template_parts(file):
 
 	return metadata, template
 
+
 def read_metadata(file):
 	source = file.read_text()
 	metadata = parse_toml(source)
 
 	return metadata
+
 
 def split_source_parts(source):
 	parts = source.split("---\n")

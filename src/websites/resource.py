@@ -1,8 +1,10 @@
-from .artifact import Site as BuiltSite, Document
-from .inflect import titleize, dasherize
+from .artifact import Document
+from .artifact import Site as BuiltSite
+from .inflect import dasherize, titleize
 from .permalink import Permalink
 from .sort import Sort
 from .template import Registry
+
 
 class Site:
 	def __init__(self, name):
@@ -39,6 +41,7 @@ class Site:
 	def add_layout(self, layout):
 		self.layouts.append(layout)
 
+
 class Collection:
 	def __init__(self, name, metadata, container):
 		if "title" in metadata:
@@ -52,7 +55,7 @@ class Collection:
 		if "sort" in metadata:
 			attr = metadata["sort"]["attr"]
 			order = metadata["sort"]["order"]
-			
+
 			if order == "ascending":
 				sort = Sort.ascending_by(attr)
 			elif order == "descending":
@@ -75,6 +78,7 @@ class Collection:
 
 	def __iter__(self):
 		yield from self.sort(self.content)
+
 
 class Page:
 	def __init__(self, name, metadata, template, container):
@@ -108,6 +112,7 @@ class Page:
 			return self.metadata[name]
 
 		raise AttributeError(f"'Page' object has no attribute '{name}'")
+
 
 class Layout:
 	def __init__(self, name, template):

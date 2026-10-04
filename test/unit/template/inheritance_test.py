@@ -1,4 +1,5 @@
-from websites.template import compile, formats, Registry
+from websites.template import Registry, compile, formats
+
 
 def test_passes_rendered_content_to_parent():
 	registry = Registry()
@@ -9,10 +10,15 @@ def test_passes_rendered_content_to_parent():
 
 	assert rendered == "<article><p>Hello, world!</p>\n</article>"
 
+
 def test_passes_sections_to_parent():
 	registry = Registry()
-	child = compile("{{#content-for \"header\"}}<h1>About</h1>{{/content-for}}", formats.handlebars, parent="main")
-	parent = compile("<header>{{content-for \"header\"}}</header>", formats.handlebars)
+	child = compile(
+		'{{#content-for "header"}}<h1>About</h1>{{/content-for}}',
+		formats.handlebars,
+		parent="main",
+	)
+	parent = compile('<header>{{content-for "header"}}</header>', formats.handlebars)
 	registry.add("main", parent)
 	rendered = child.render(registry)
 

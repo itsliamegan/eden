@@ -1,6 +1,7 @@
 from pathlib import Path
 from textwrap import dedent
 
+
 def create(name, minimal=False):
 	working_dir = Path.cwd()
 	root_dir = working_dir.joinpath(name)

@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from sys import exit
+
 from .commands import build, create
 
 parser = ArgumentParser(prog="websites")
@@ -13,6 +13,7 @@ create_parser.add_argument(
 	help="name of the site to create",
 	type=str,
 )
+
 
 def main(argv=None):
 	args = parser.parse_args(argv)

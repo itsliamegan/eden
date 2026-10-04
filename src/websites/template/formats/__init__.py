@@ -1,6 +1,5 @@
-from . import handlebars
-from . import html
-from . import markdown
+from . import handlebars, html, markdown
+
 
 def by_suffix(file):
 	if file.suffix == ".html":

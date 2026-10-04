@@ -5,6 +5,7 @@ def titleize(name):
 
 	return title
 
+
 def dasherize(name):
 	lowercased = name.lower()
 	dashed = lowercased.replace("_", "-")

@@ -1,4 +1,5 @@
-from websites.resource import Site, Collection, Page
+from websites.resource import Collection, Page, Site
+
 
 def test_titleizes_name():
 	site = Site("blog")
@@ -6,11 +7,13 @@ def test_titleizes_name():
 
 	assert collection.title == "Articles"
 
+
 def test_uses_custom_title():
 	site = Site("blog")
 	collection = Collection("articles", metadata={"title": "Writing"}, container=site)
 
 	assert collection.title == "Writing"
+
 
 def test_iterates_content():
 	site = Site("blog")
@@ -20,20 +23,20 @@ def test_iterates_content():
 
 	assert list(collection) == [page]
 
+
 def test_iterates_content_in_order():
 	site = Site("blog")
 	collection = Collection(
 		"articles",
-		metadata={
-			"sort": {
-				"attr": "order",
-				"order": "ascending"
-			}
-		},
+		metadata={"sort": {"attr": "order", "order": "ascending"}},
 		container=site,
 	)
-	first_page = Page("first_page", metadata={"order": 1}, template=None, container=collection)
-	second_page = Page("second_page", metadata={"order": 2}, template=None, container=collection)
+	first_page = Page(
+		"first_page", metadata={"order": 1}, template=None, container=collection
+	)
+	second_page = Page(
+		"second_page", metadata={"order": 2}, template=None, container=collection
+	)
 	collection.add_content(second_page)
 	collection.add_content(first_page)
 
