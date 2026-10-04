@@ -1,4 +1,4 @@
-from websites.sort import Sort
+from eden.sort import Sort
 
 
 def test_doesnt_sort():

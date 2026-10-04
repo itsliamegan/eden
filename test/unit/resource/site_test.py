@@ -1,4 +1,4 @@
-from websites.resource import Site
+from eden.resource import Site
 
 
 def test_titleizes_name():

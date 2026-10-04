@@ -2,7 +2,7 @@ from os import chdir as set_working_dir
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from websites.commands import build, create
+from eden.commands import build, create
 
 
 def test_builds_single_page():

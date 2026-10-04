@@ -2,7 +2,7 @@ from argparse import ArgumentParser
 
 from .commands import build, create
 
-parser = ArgumentParser(prog="websites")
+parser = ArgumentParser(prog="eden")
 subparser = parser.add_subparsers(title="subcommands", dest="command")
 
 build_parser = subparser.add_parser("build", help="build an existing site")

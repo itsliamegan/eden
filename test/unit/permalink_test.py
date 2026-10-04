@@ -1,4 +1,4 @@
-from websites.permalink import Kind, Permalink
+from eden.permalink import Kind, Permalink
 
 
 def test_creates_root():

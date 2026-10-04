@@ -1,4 +1,4 @@
-from websites.template import Registry, compile, formats
+from eden.template import Registry, compile, formats
 
 
 def test_passes_rendered_content_to_parent():

@@ -1,5 +1,5 @@
 [project]
-name = "websites"
+name = "eden"
 version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
@@ -9,7 +9,7 @@ dependencies = [
 ]
 
 [project.scripts]
-websites = "websites:main"
+eden = "eden:main"
 
 [dependency-groups]
 dev = [
@@ -32,6 +32,6 @@ quote-style = "double"
 
 [tool.ruff.lint.isort]
 case-sensitive = true
-known-first-party = ["websites"]
+known-first-party = ["eden"]
 force-sort-within-sections = true
 order-by-type = false

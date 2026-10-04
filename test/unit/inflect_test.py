@@ -1,4 +1,4 @@
-from websites.inflect import dasherize, titleize
+from eden.inflect import dasherize, titleize
 
 
 def test_titleizes_single_word():
