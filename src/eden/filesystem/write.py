@@ -1,16 +1,16 @@
 from pathlib import Path
 from shutil import rmtree
 
-from ..artifact import Document, Site
+from ..document import Document
 
 
-def write_site(public_dir: Path, site: Site):
+def write_documents(public_dir: Path, documents: list[Document]):
 	if public_dir.exists():
 		rmtree(public_dir)
 	else:
 		public_dir.mkdir()
 
-	for document in site.documents:
+	for document in documents:
 		write_document(public_dir, document)
 
 

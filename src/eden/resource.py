@@ -1,5 +1,4 @@
-from .artifact import Document
-from .artifact import Site as BuiltSite
+from .document import Document
 from .inflect import dasherize, titleize
 from .permalink import Permalink
 from .sort import AscendingBy, Default, DescendingBy
@@ -18,7 +17,7 @@ class Site:
 		self.layouts = []
 
 	def build(self):
-		site = BuiltSite()
+		documents = []
 
 		registry = Registry()
 		for layout in self.layouts:
@@ -26,14 +25,12 @@ class Site:
 
 		for content in self.content.values():
 			if isinstance(content, Collection):
-				documents = content.build(self, registry)
-				for document in documents:
-					site.add_document(document)
+				documents.extend(content.build(self, registry))
 			elif isinstance(content, Page):
 				document = content.build(self, registry)
-				site.add_document(document)
+				documents.append(document)
 
-		return site
+		return documents
 
 	def add_content(self, content):
 		self.content[content.name] = content
