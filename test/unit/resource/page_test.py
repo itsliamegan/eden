@@ -11,7 +11,10 @@ def test_titleizes_name():
 def test_uses_custom_title():
 	site = Site("blog")
 	page = Page(
-		"contact_us", metadata={"title": "Contact"}, template=None, container=site
+		"contact_us",
+		metadata={"title": "Contact"},
+		template=None,
+		container=site,
 	)
 
 	assert page.title == "Contact"

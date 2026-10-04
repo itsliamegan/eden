@@ -32,10 +32,16 @@ def test_iterates_content_in_order():
 		container=site,
 	)
 	first_page = Page(
-		"first_page", metadata={"order": 1}, template=None, container=collection
+		"first_page",
+		metadata={"order": 1},
+		template=None,
+		container=collection,
 	)
 	second_page = Page(
-		"second_page", metadata={"order": 2}, template=None, container=collection
+		"second_page",
+		metadata={"order": 2},
+		template=None,
+		container=collection,
 	)
 	collection.add_content(second_page)
 	collection.add_content(first_page)
