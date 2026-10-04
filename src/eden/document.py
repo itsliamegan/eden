@@ -1,7 +1,9 @@
+from dataclasses import dataclass
+
 from .permalink import Permalink
 
 
+@dataclass
 class Document:
-	def __init__(self, permalink: Permalink, contents: str):
-		self.permalink = permalink
-		self.contents = contents
+	permalink: Permalink
+	contents: str

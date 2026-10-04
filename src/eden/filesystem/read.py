@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import Any
+
 from toml import loads as parse_toml
 
 from ..resource import Collection, Layout, Page, Site
@@ -5,7 +8,7 @@ from ..template import Template
 from ..template.format import Format
 
 
-def read_site(root_dir):
+def read_site(root_dir: Path) -> Site:
 	src_dir = root_dir.joinpath("src")
 	content_dir = src_dir.joinpath("content")
 	layouts_dir = src_dir.joinpath("layouts")
@@ -28,7 +31,7 @@ def read_site(root_dir):
 	return site
 
 
-def read_collection(dir, container):
+def read_collection(dir: Path, container: Site) -> Collection:
 	metadata_file = dir.joinpath("metadata.toml")
 	if metadata_file.exists():
 		metadata = read_metadata(metadata_file)
@@ -45,21 +48,21 @@ def read_collection(dir, container):
 	return collection
 
 
-def read_page(file, container):
+def read_page(file: Path, container: Site | Collection) -> Page:
 	name = file.stem
 	metadata, template = read_template_parts(file)
 
 	return Page(name, metadata, template, container)
 
 
-def read_layout(file):
+def read_layout(file: Path) -> Layout:
 	name = file.stem
 	_metadata, template = read_template_parts(file)
 
 	return Layout(name, template)
 
 
-def read_template_parts(file):
+def read_template_parts(file: Path) -> tuple[dict[str, Any], Template]:
 	source = file.read_text()
 	header, body = split_source_parts(source)
 
@@ -73,20 +76,20 @@ def read_template_parts(file):
 	return metadata, template
 
 
-def read_metadata(file):
+def read_metadata(file: Path) -> dict[str, Any]:
 	source = file.read_text()
 	metadata = parse_toml(source)
 
 	return metadata
 
 
-def split_source_parts(source):
-	parts = source.split("---\n")
+def split_source_parts(source: str) -> tuple[str, str]:
+	parts = source.split("---\n", 1)
 
 	if len(parts) == 1:
 		header = ""
 		body = parts[0]
-	elif len(parts) == 2:
+	else:
 		header = parts[0]
 		body = parts[1]
 
