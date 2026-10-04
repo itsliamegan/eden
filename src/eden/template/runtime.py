@@ -1,10 +1,12 @@
 class Runtime:
-	def __init__(self, locals):
+	sections: dict[str, str]
+
+	def __init__(self, locals: dict[str, object]):
 		self.locals = locals
 		self.content = ""
 		self.sections = {}
 
-	def content_for(self, section, content=None):
+	def content_for(self, section: str, content: str | None = None) -> str | None:
 		if content is None:
 			return self.sections[section]
 		else:

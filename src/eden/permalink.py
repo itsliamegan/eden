@@ -3,27 +3,27 @@ from enum import Enum, auto
 
 class Permalink:
 	@staticmethod
-	def root():
+	def root() -> Permalink:
 		return Permalink(Kind.INDEX, [])
 
-	def __init__(self, kind, components):
+	def __init__(self, kind: Kind, components: list[str]):
 		self.kind = kind
 		self.components = components
 		self.is_index = kind == Kind.INDEX
 
-	def join(self, component):
+	def join(self, component: str) -> Permalink:
 		return Permalink(Kind.ENTRY, self.components + [component])
 
-	def to_index(self):
+	def to_index(self) -> Permalink:
 		return Permalink(Kind.INDEX, self.components.copy())
 
-	def __eq__(self, other) -> bool:
+	def __eq__(self, other: object) -> bool:
 		if not isinstance(other, Permalink):
 			return NotImplemented
 
 		return self.kind == other.kind and self.components == other.components
 
-	def __str__(self):
+	def __str__(self) -> str:
 		if len(self.components) == 0:
 			return "/"
 
