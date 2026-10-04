@@ -1,33 +1,33 @@
-class Sort:
-	@staticmethod
-	def default():
-		return Default()
-
-	@staticmethod
-	def ascending_by(attr):
-		return AscendingBy(attr)
-
-	@staticmethod
-	def descending_by(attr):
-		return DescendingBy(attr)
+from abc import ABC, abstractmethod
+from collections.abc import Iterable
+from dataclasses import dataclass
 
 
-class Default:
-	def __call__(self, iter):
-		return iter
+class Sort(ABC):
+	@abstractmethod
+	def apply[T](self, items: Iterable[T]) -> Iterable[T]: ...
 
 
-class AscendingBy:
-	def __init__(self, attr):
-		self.attr = attr
-
-	def __call__(self, iter):
-		return sorted(iter, key=lambda item: getattr(item, self.attr))
+class Default(Sort):
+	def apply[T](self, items: Iterable[T]) -> Iterable[T]:
+		return items
 
 
-class DescendingBy:
-	def __init__(self, attr):
-		self.attr = attr
+@dataclass
+class AscendingBy(Sort):
+	attribute: str
 
-	def __call__(self, iter):
-		return sorted(iter, key=lambda item: getattr(item, self.attr), reverse=True)
+	def apply[T](self, items: Iterable[T]) -> Iterable[T]:
+		return sorted(items, key=lambda item: getattr(item, self.attribute))
+
+
+@dataclass
+class DescendingBy(Sort):
+	attribute: str
+
+	def apply[T](self, items: Iterable[T]) -> Iterable[T]:
+		return sorted(
+			items,
+			key=lambda item: getattr(item, self.attribute),
+			reverse=True,
+		)

@@ -1,4 +1,4 @@
-from eden.sort import Sort
+from eden.sort import AscendingBy, Default, DescendingBy
 
 
 def test_doesnt_sort():
@@ -8,9 +8,9 @@ def test_doesnt_sort():
 
 	alice = Person("Alice")
 	bob = Person("Bob")
-	sort = Sort.default()
+	sort = Default()
 	people = [alice, bob]
-	sorted_people = sort(people)
+	sorted_people = sort.apply(people)
 
 	assert sorted_people == [alice, bob]
 
@@ -22,9 +22,9 @@ def test_sorts_ascending_by_attribute():
 
 	alice = Person("Alice")
 	bob = Person("Bob")
-	sort = Sort.ascending_by("name")
+	sort = AscendingBy("name")
 	people = [bob, alice]
-	sorted_people = sort(people)
+	sorted_people = sort.apply(people)
 
 	assert sorted_people == [alice, bob]
 
@@ -36,8 +36,8 @@ def test_sorts_descending_by_attribute():
 
 	alice = Person("Alice")
 	bob = Person("Bob")
-	sort = Sort.descending_by("name")
+	sort = DescendingBy("name")
 	people = [alice, bob]
-	sorted_people = sort(people)
+	sorted_people = sort.apply(people)
 
 	assert sorted_people == [bob, alice]

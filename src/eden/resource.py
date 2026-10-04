@@ -2,7 +2,7 @@ from .artifact import Document
 from .artifact import Site as BuiltSite
 from .inflect import dasherize, titleize
 from .permalink import Permalink
-from .sort import Sort
+from .sort import AscendingBy, Default, DescendingBy
 from .template import Registry
 
 
@@ -57,11 +57,11 @@ class Collection:
 			order = metadata["sort"]["order"]
 
 			if order == "ascending":
-				sort = Sort.ascending_by(attr)
+				sort = AscendingBy(attr)
 			elif order == "descending":
-				sort = Sort.descending_by(attr)
+				sort = DescendingBy(attr)
 		else:
-			sort = Sort.default()
+			sort = Default()
 
 		self.name = name
 		self.title = title
@@ -77,7 +77,7 @@ class Collection:
 		self.content.append(content)
 
 	def __iter__(self):
-		yield from self.sort(self.content)
+		yield from self.sort.apply(self.content)
 
 
 class Page:
