@@ -1,4 +1,4 @@
 from .registry import Registry
-from .template import Template, compile
+from .template import Template
 
-__all__ = ["Registry", "Template", "compile"]
+__all__ = ["Registry", "Template"]

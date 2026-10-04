@@ -1,29 +1,37 @@
+from dataclasses import dataclass
+from typing import Self, TYPE_CHECKING
+
+from .format import Compiled, Format
 from .runtime import Runtime
 
-
-def compile(source, format, parent=None):
-	compiled = format.compile(source)
-	return Template(compiled, format, parent)
+if TYPE_CHECKING:
+	from .registry import Registry
 
 
+@dataclass
 class Template:
-	def __init__(self, compiled, format, parent):
-		self.compiled = compiled
-		self.format = format
-		self.parent = parent
+	compiled: Compiled
+	parent: str | None = None
 
-	def render(self, registry, locals=None):
-		if locals is None:
-			locals = {}
+	@classmethod
+	def compile(cls, source: str, format: Format, parent: str | None = None) -> Self:
+		return cls(format.compile(source), parent=parent)
 
+	def render(
+		self,
+		registry: Registry,
+		locals: dict[str, object] | None = None,
+	) -> str:
+		locals = locals or {}
 		runtime = Runtime(locals)
-		template = self
 
+		template: Template | None = self
 		while template is not None:
-			template.execute(runtime)
-			template = registry.find(template.parent)
+			template.compiled.execute(runtime)
+
+			if template.parent is None:
+				template = None
+			else:
+				template = registry.find(template.parent)
 
 		return runtime.content
-
-	def execute(self, runtime):
-		self.format.execute(self.compiled, runtime)

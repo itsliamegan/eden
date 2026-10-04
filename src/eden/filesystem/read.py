@@ -1,7 +1,8 @@
 from toml import loads as parse_toml
 
 from ..resource import Collection, Layout, Page, Site
-from ..template import compile, formats
+from ..template import Template
+from ..template.format import Format
 
 
 def read_site(root_dir):
@@ -63,7 +64,11 @@ def read_template_parts(file):
 	header, body = split_source_parts(source)
 
 	metadata = parse_toml(header)
-	template = compile(body, formats.by_suffix(file), metadata.get("layout"))
+	template = Template.compile(
+		body,
+		Format.for_file(file),
+		parent=metadata.get("layout"),
+	)
 
 	return metadata, template
 
