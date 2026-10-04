@@ -14,7 +14,7 @@ create_parser.add_argument(
 	type=str,
 )
 
-def main(argv):
+def main(argv=None):
 	args = parser.parse_args(argv)
 	params = vars(args).copy()
 	del params["command"]
