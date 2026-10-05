@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
 	"cmarkgfm>=2025.10.22",
+	"luna",
 	"pybars3>=0.9.7",
 	"toml>=0.10.2",
 ]
@@ -13,7 +14,6 @@ eden = "eden:main"
 
 [dependency-groups]
 dev = [
-	"luna",
 	"ruff>=0.16.10",
 	"ty>=0.0.84",
 ]

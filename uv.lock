@@ -92,13 +92,13 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "cmarkgfm" },
+    { name = "luna" },
     { name = "pybars3" },
     { name = "toml" },
 ]
 
 [package.dev-dependencies]
 dev = [
-    { name = "luna" },
     { name = "ruff" },
     { name = "ty" },
 ]
@@ -106,13 +106,13 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "cmarkgfm", specifier = ">=2025.10.22" },
+    { name = "luna", git = "https://github.com/itsliamegan/luna?branch=main" },
     { name = "pybars3", specifier = ">=0.9.7" },
     { name = "toml", specifier = ">=0.10.2" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "luna", git = "https://github.com/itsliamegan/luna?branch=main" },
     { name = "ruff", specifier = ">=0.16.10" },
     { name = "ty", specifier = ">=0.0.84" },
 ]
