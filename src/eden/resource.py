@@ -65,7 +65,7 @@ class Collection:
 			title = titleize(name)
 
 		slug = dasherize(name)
-		permalink = container.permalink.join(slug)
+		permalink = container.permalink.join(slug).to_index()
 
 		if "sort" in metadata:
 			attribute = metadata["sort"]["attr"]

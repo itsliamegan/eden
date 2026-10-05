@@ -19,6 +19,13 @@ def test_uses_custom_title():
 	assert collection.title == "Writing"
 
 
+def test_joins_slug_to_container_permalink_as_index():
+	site = Site("blog")
+	collection = Collection("hello_world", metadata={}, container=site)
+
+	assert str(collection.permalink) == "/hello-world/"
+
+
 def test_iterates_content():
 	site = Site("blog")
 	collection = Collection("articles", metadata={}, container=site)

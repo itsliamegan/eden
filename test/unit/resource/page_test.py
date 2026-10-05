@@ -36,6 +36,19 @@ def test_joins_slug_to_container_permalink():
 	assert str(page.permalink) == "/about"
 
 
+def test_joins_slug_to_collection_permalink():
+	site = Site("blog")
+	collection = Collection("articles", metadata={}, container=site)
+	page = Page(
+		"hello_world",
+		metadata={},
+		template=empty_template(),
+		container=collection,
+	)
+
+	assert str(page.permalink) == "/articles/hello-world"
+
+
 def test_accesses_metadata_attributes():
 	site = Site("blog")
 	collection = Collection("articles", metadata={}, container=site)
