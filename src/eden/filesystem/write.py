@@ -15,11 +15,6 @@ def write_documents(public_dir: Path, documents: list[Document]):
 
 
 def write_document(public_dir: Path, document: Document):
-	file = public_dir.joinpath(*document.permalink.segments)
-	if document.permalink.is_index:
-		file = file.joinpath("index.html")
-	else:
-		file = file.with_suffix(".html")
-
+	file = public_dir.joinpath(document.path)
 	file.parent.mkdir(parents=True, exist_ok=True)
 	file.write_text(document.contents)
