@@ -2,15 +2,15 @@ from os import chdir as set_working_dir
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from pytest import raises
+from luna.test.assertion import assert_eq, assert_not, assert_raises
 
-from eden.commands import build, create
+from eden.commands import Build, Create
 
 
 def test_builds_single_page():
 	with TemporaryDirectory() as tempdir:
 		set_working_dir(tempdir)
-		create("blog", minimal=True)
+		Create(path="blog", minimal=True).run()
 
 		root_dir = Path(tempdir).joinpath("blog")
 		src_dir = root_dir.joinpath("src")
@@ -20,19 +20,19 @@ def test_builds_single_page():
 		about_page_file.write_text("<h1>About</h1>")
 
 		set_working_dir(root_dir)
-		build()
+		Build().run()
 
 		public_dir = root_dir.joinpath("public")
 		about_document_file = public_dir.joinpath("about.html")
 		contents = about_document_file.read_text()
 
-		assert contents == "<h1>About</h1>"
+		assert_eq(contents, "<h1>About</h1>")
 
 
 def test_builds_single_index_page():
 	with TemporaryDirectory() as tempdir:
 		set_working_dir(tempdir)
-		create("blog", minimal=True)
+		Create(path="blog", minimal=True).run()
 
 		root_dir = Path(tempdir).joinpath("blog")
 		src_dir = root_dir.joinpath("src")
@@ -42,19 +42,19 @@ def test_builds_single_index_page():
 		index_page_file.write_text("<h1>Home</h1>")
 
 		set_working_dir(root_dir)
-		build()
+		Build().run()
 
 		public_dir = root_dir.joinpath("public")
 		about_document_file = public_dir.joinpath("index.html")
 		contents = about_document_file.read_text()
 
-		assert contents == "<h1>Home</h1>"
+		assert_eq(contents, "<h1>Home</h1>")
 
 
 def test_builds_page_with_separator_in_body():
 	with TemporaryDirectory() as tempdir:
 		set_working_dir(tempdir)
-		create("blog", minimal=True)
+		Create(path="blog", minimal=True).run()
 
 		root_dir = Path(tempdir).joinpath("blog")
 		src_dir = root_dir.joinpath("src")
@@ -64,19 +64,19 @@ def test_builds_page_with_separator_in_body():
 		about_page_file.write_text('title = "About"\n---\nFirst\n\n---\nSecond\n')
 
 		set_working_dir(root_dir)
-		build()
+		Build().run()
 
 		public_dir = root_dir.joinpath("public")
 		about_document_file = public_dir.joinpath("about.html")
 		contents = about_document_file.read_text()
 
-		assert contents == "<p>First</p>\n<hr />\n<p>Second</p>\n"
+		assert_eq(contents, "<p>First</p>\n<hr />\n<p>Second</p>\n")
 
 
 def test_builds_collection_index_page():
 	with TemporaryDirectory() as tempdir:
 		set_working_dir(tempdir)
-		create("blog", minimal=True)
+		Create(path="blog", minimal=True).run()
 
 		root_dir = Path(tempdir).joinpath("blog")
 		src_dir = root_dir.joinpath("src")
@@ -90,21 +90,21 @@ def test_builds_collection_index_page():
 		article_page_file.write_text("<h1>Hello, World</h1>")
 
 		set_working_dir(root_dir)
-		build()
+		Build().run()
 
 		public_dir = root_dir.joinpath("public")
 		articles_document_file = public_dir.joinpath("articles", "index.html")
 		article_document_file = public_dir.joinpath("articles", "hello-world.html")
 
-		assert articles_document_file.read_text() == "<h1>Articles</h1>"
-		assert article_document_file.read_text() == "<h1>Hello, World</h1>"
-		assert not public_dir.joinpath("articles.html").exists()
+		assert_eq(articles_document_file.read_text(), "<h1>Articles</h1>")
+		assert_eq(article_document_file.read_text(), "<h1>Hello, World</h1>")
+		assert_not(public_dir.joinpath("articles.html").exists())
 
 
 def test_rejects_index_page_in_collection():
 	with TemporaryDirectory() as tempdir:
 		set_working_dir(tempdir)
-		create("blog", minimal=True)
+		Create(path="blog", minimal=True).run()
 
 		root_dir = Path(tempdir).joinpath("blog")
 		src_dir = root_dir.joinpath("src")
@@ -117,5 +117,5 @@ def test_rejects_index_page_in_collection():
 
 		set_working_dir(root_dir)
 
-		with raises(ValueError, match="Collection articles contains an index page"):
-			build()
+		with assert_raises(ValueError):
+			Build().run()

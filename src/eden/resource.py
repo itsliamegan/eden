@@ -2,8 +2,9 @@ from collections.abc import Iterator
 from dataclasses import dataclass
 from typing import Any, Self
 
+from luna import inflect
+
 from .document import Document
-from .inflect import dasherize, titleize
 from .permalink import Permalink
 from .sort import AscendingBy, Default, DescendingBy, Sort
 from .template import Registry, Template
@@ -19,7 +20,7 @@ class Site:
 	layouts: list[Layout]
 
 	def __init__(self, name: str):
-		title = titleize(name)
+		title = inflect.title(name)
 		permalink = Permalink.root()
 
 		self.name = name
@@ -69,9 +70,9 @@ class Collection:
 		if "title" in metadata:
 			title = metadata["title"]
 		else:
-			title = titleize(name)
+			title = inflect.title(name)
 
-		slug = dasherize(name)
+		slug = inflect.dash(name)
 		permalink = container.permalink.join(slug).to_index()
 
 		if "sort" in metadata:
@@ -128,9 +129,9 @@ class Page:
 		if "title" in metadata:
 			title = metadata["title"]
 		else:
-			title = titleize(name)
+			title = inflect.title(name)
 
-		slug = dasherize(name)
+		slug = inflect.dash(name)
 		permalink = container.permalink.join(slug)
 
 		return cls(name, title, permalink, metadata, template)
