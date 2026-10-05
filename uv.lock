@@ -120,7 +120,7 @@ dev = [
 [[package]]
 name = "luna"
 version = "0.1.0"
-source = { git = "https://github.com/itsliamegan/luna?branch=main#79b2e0564dce8b4d492e1e9bd1db0a601d35291b" }
+source = { git = "https://github.com/itsliamegan/luna?branch=main#c6413b230d6f6cc0c4ea9ce8c337a1538ad8d124" }
 
 [[package]]
 name = "pybars3"
