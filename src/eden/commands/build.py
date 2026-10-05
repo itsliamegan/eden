@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ..filesystem import read_site, write_site
+from ..filesystem import read_site, write_documents
 
 
 def build():
@@ -8,4 +8,4 @@ def build():
 	public_dir = root_dir.joinpath("public")
 
 	site = read_site(root_dir)
-	write_site(public_dir, site.build())
+	write_documents(public_dir, site.build())

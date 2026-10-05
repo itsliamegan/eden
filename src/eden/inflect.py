@@ -1,4 +1,4 @@
-def titleize(name):
+def titleize(name: str) -> str:
 	words = name.split("_")
 	capitalized_words = (word.capitalize() for word in words)
 	title = " ".join(capitalized_words)
@@ -6,7 +6,7 @@ def titleize(name):
 	return title
 
 
-def dasherize(name):
+def dasherize(name: str) -> str:
 	lowercased = name.lower()
 	dashed = lowercased.replace("_", "-")
 

@@ -47,3 +47,25 @@ def test_builds_single_index_page():
 		contents = about_document_file.read_text()
 
 		assert contents == "<h1>Home</h1>"
+
+
+def test_builds_page_with_separator_in_body():
+	with TemporaryDirectory() as tempdir:
+		set_working_dir(tempdir)
+		create("blog", minimal=True)
+
+		root_dir = Path(tempdir).joinpath("blog")
+		src_dir = root_dir.joinpath("src")
+		content_dir = src_dir.joinpath("content")
+
+		about_page_file = content_dir.joinpath("about.md")
+		about_page_file.write_text('title = "About"\n---\nFirst\n\n---\nSecond\n')
+
+		set_working_dir(root_dir)
+		build()
+
+		public_dir = root_dir.joinpath("public")
+		about_document_file = public_dir.joinpath("about.html")
+		contents = about_document_file.read_text()
+
+		assert contents == "<p>First</p>\n<hr />\n<p>Second</p>\n"

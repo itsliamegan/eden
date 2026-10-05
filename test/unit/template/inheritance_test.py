@@ -1,10 +1,11 @@
-from eden.template import Registry, compile, formats
+from eden.template import Registry, Template
+from eden.template.format import handlebars, markdown
 
 
 def test_passes_rendered_content_to_parent():
 	registry = Registry()
-	child = compile("Hello, world!", formats.markdown, parent="article")
-	parent = compile("<article>{{content}}</article>", formats.handlebars)
+	child = Template.compile("Hello, world!", markdown.Format(), parent="article")
+	parent = Template.compile("<article>{{content}}</article>", handlebars.Format())
 	registry.add("article", parent)
 	rendered = child.render(registry)
 
@@ -13,12 +14,15 @@ def test_passes_rendered_content_to_parent():
 
 def test_passes_sections_to_parent():
 	registry = Registry()
-	child = compile(
+	child = Template.compile(
 		'{{#content-for "header"}}<h1>About</h1>{{/content-for}}',
-		formats.handlebars,
+		handlebars.Format(),
 		parent="main",
 	)
-	parent = compile('<header>{{content-for "header"}}</header>', formats.handlebars)
+	parent = Template.compile(
+		'<header>{{content-for "header"}}</header>',
+		handlebars.Format(),
+	)
 	registry.add("main", parent)
 	rendered = child.render(registry)
 
