@@ -6,7 +6,7 @@ python = "3.14"
 python.uv_venv_auto = "create|source"
 
 [tasks]
-test = "uv run pytest"
+test = "uv run luna test"
 lint = [
 	"ruff format",
 	"ruff check --fix",

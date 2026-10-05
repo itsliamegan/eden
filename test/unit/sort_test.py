@@ -1,3 +1,5 @@
+from luna.test.assertion import assert_eq
+
 from eden.sort import AscendingBy, Default, DescendingBy
 
 
@@ -12,7 +14,7 @@ def test_doesnt_sort():
 	people = [alice, bob]
 	sorted_people = sort.apply(people)
 
-	assert sorted_people == [alice, bob]
+	assert_eq(sorted_people, [alice, bob])
 
 
 def test_sorts_ascending_by_attribute():
@@ -26,7 +28,7 @@ def test_sorts_ascending_by_attribute():
 	people = [bob, alice]
 	sorted_people = sort.apply(people)
 
-	assert sorted_people == [alice, bob]
+	assert_eq(sorted_people, [alice, bob])
 
 
 def test_sorts_descending_by_attribute():
@@ -40,4 +42,4 @@ def test_sorts_descending_by_attribute():
 	people = [alice, bob]
 	sorted_people = sort.apply(people)
 
-	assert sorted_people == [bob, alice]
+	assert_eq(sorted_people, [bob, alice])

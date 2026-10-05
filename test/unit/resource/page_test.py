@@ -1,3 +1,5 @@
+from luna.test.assertion import assert_eq
+
 from eden.resource import Collection, Page, Site
 from eden.template import Template
 from eden.template.format import html
@@ -7,7 +9,7 @@ def test_titleizes_name():
 	site = Site("blog")
 	page = Page.entry("about", metadata={}, template=empty_template(), container=site)
 
-	assert page.title == "About"
+	assert_eq(page.title, "About")
 
 
 def test_uses_custom_title():
@@ -19,14 +21,14 @@ def test_uses_custom_title():
 		container=site,
 	)
 
-	assert page.title == "Contact"
+	assert_eq(page.title, "Contact")
 
 
 def test_index_uses_container_title():
 	site = Site("blog")
 	page = Page.index("index", metadata={}, template=empty_template(), container=site)
 
-	assert page.title == "Blog"
+	assert_eq(page.title, "Blog")
 
 
 def test_index_uses_container_permalink():
@@ -39,14 +41,14 @@ def test_index_uses_container_permalink():
 		container=collection,
 	)
 
-	assert str(page.permalink) == "/articles/"
+	assert_eq(str(page.permalink), "/articles/")
 
 
 def test_joins_slug_to_container_permalink():
 	site = Site("blog")
 	page = Page.entry("about", metadata={}, template=empty_template(), container=site)
 
-	assert str(page.permalink) == "/about"
+	assert_eq(str(page.permalink), "/about")
 
 
 def test_joins_slug_to_collection_permalink():
@@ -59,7 +61,7 @@ def test_joins_slug_to_collection_permalink():
 		container=collection,
 	)
 
-	assert str(page.permalink) == "/articles/hello-world"
+	assert_eq(str(page.permalink), "/articles/hello-world")
 
 
 def test_accesses_metadata_attributes():
@@ -72,7 +74,7 @@ def test_accesses_metadata_attributes():
 		container=collection,
 	)
 
-	assert page.author == "Liam Egan"
+	assert_eq(page.author, "Liam Egan")
 
 
 def empty_template():

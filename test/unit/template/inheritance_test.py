@@ -1,3 +1,5 @@
+from luna.test.assertion import assert_eq
+
 from eden.template import Registry, Template
 from eden.template.format import handlebars, markdown
 
@@ -9,7 +11,7 @@ def test_passes_rendered_content_to_parent():
 	registry.add("article", parent)
 	rendered = child.render(registry)
 
-	assert rendered == "<article><p>Hello, world!</p>\n</article>"
+	assert_eq(rendered, "<article><p>Hello, world!</p>\n</article>")
 
 
 def test_passes_sections_to_parent():
@@ -26,4 +28,4 @@ def test_passes_sections_to_parent():
 	registry.add("main", parent)
 	rendered = child.render(registry)
 
-	assert rendered == "<header><h1>About</h1></header>"
+	assert_eq(rendered, "<header><h1>About</h1></header>")
