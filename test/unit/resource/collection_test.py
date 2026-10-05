@@ -29,12 +29,33 @@ def test_joins_slug_to_container_permalink_as_index():
 def test_iterates_content():
 	site = Site("blog")
 	collection = Collection("articles", metadata={}, container=site)
-	page = Page(
+	page = Page.entry(
 		"hello_world",
 		metadata={},
 		template=empty_template(),
 		container=collection,
 	)
+	collection.add_content(page)
+
+	assert list(collection) == [page]
+
+
+def test_excludes_index_from_content():
+	site = Site("blog")
+	collection = Collection("articles", metadata={}, container=site)
+	index = Page.index(
+		"articles",
+		metadata={},
+		template=empty_template(),
+		container=collection,
+	)
+	page = Page.entry(
+		"hello_world",
+		metadata={},
+		template=empty_template(),
+		container=collection,
+	)
+	collection.index = index
 	collection.add_content(page)
 
 	assert list(collection) == [page]
@@ -47,13 +68,13 @@ def test_iterates_content_in_order():
 		metadata={"sort": {"attr": "order", "order": "ascending"}},
 		container=site,
 	)
-	first_page = Page(
+	first_page = Page.entry(
 		"first_page",
 		metadata={"order": 1},
 		template=empty_template(),
 		container=collection,
 	)
-	second_page = Page(
+	second_page = Page.entry(
 		"second_page",
 		metadata={"order": 2},
 		template=empty_template(),
