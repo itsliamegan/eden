@@ -1,41 +1,30 @@
-from enum import Enum, auto
+from dataclasses import dataclass
+from typing import Self
 
 
+@dataclass
 class Permalink:
-	@staticmethod
-	def root() -> Permalink:
-		return Permalink(Kind.INDEX, [])
+	segments: list[str]
+	is_index: bool = False
 
-	def __init__(self, kind: Kind, components: list[str]):
-		self.kind = kind
-		self.components = components
-		self.is_index = kind == Kind.INDEX
+	@classmethod
+	def root(cls) -> Self:
+		return cls([], is_index=True)
 
-	def join(self, component: str) -> Permalink:
-		return Permalink(Kind.ENTRY, self.components + [component])
+	def join(self, segment: str) -> Permalink:
+		return Permalink(self.segments + [segment])
 
 	def to_index(self) -> Permalink:
-		return Permalink(Kind.INDEX, self.components.copy())
-
-	def __eq__(self, other: object) -> bool:
-		if not isinstance(other, Permalink):
-			return NotImplemented
-
-		return self.kind == other.kind and self.components == other.components
+		return Permalink(self.segments.copy(), is_index=True)
 
 	def __str__(self) -> str:
-		if len(self.components) == 0:
+		if len(self.segments) == 0:
 			return "/"
 
-		inner_path = "/".join(self.components)
+		inner_path = "/".join(self.segments)
 		path = "/" + inner_path
 
-		if self.kind == Kind.INDEX:
+		if self.is_index:
 			path += "/"
 
 		return path
-
-
-class Kind(Enum):
-	INDEX = auto()
-	ENTRY = auto()
