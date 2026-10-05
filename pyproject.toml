@@ -10,7 +10,7 @@ dependencies = [
 ]
 
 [project.scripts]
-eden = "eden:main"
+eden = "eden.__main__:main"
 
 [dependency-groups]
 dev = [
