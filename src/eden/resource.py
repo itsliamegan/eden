@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Self
 
 from .document import Document
 from .inflect import dasherize, titleize
@@ -14,6 +14,7 @@ class Site:
 	name: str
 	title: str
 	permalink: Permalink
+	index: Page | None
 	content: dict[str, Collection | Page]
 	layouts: list[Layout]
 
@@ -24,6 +25,7 @@ class Site:
 		self.name = name
 		self.title = title
 		self.permalink = permalink
+		self.index = None
 		self.content = {}
 		self.layouts = []
 
@@ -33,6 +35,10 @@ class Site:
 		registry = Registry()
 		for layout in self.layouts:
 			registry.add(layout.name, layout.template)
+
+		if self.index is not None:
+			index = self.index.build(self, registry)
+			documents.append(index)
 
 		for content in self.content.values():
 			if isinstance(content, Collection):
@@ -56,6 +62,7 @@ class Collection:
 	title: str
 	permalink: Permalink
 	sort: Sort
+	index: Page | None
 	content: list[Page]
 
 	def __init__(self, name: str, metadata: dict[str, Any], container: Site):
@@ -65,7 +72,7 @@ class Collection:
 			title = titleize(name)
 
 		slug = dasherize(name)
-		permalink = container.permalink.join(slug)
+		permalink = container.permalink.join(slug).to_index()
 
 		if "sort" in metadata:
 			attribute = metadata["sort"]["attr"]
@@ -85,9 +92,13 @@ class Collection:
 		self.title = title
 		self.permalink = permalink
 		self.sort = sort
+		self.index = None
 		self.content = []
 
 	def build(self, site: Site, registry: Registry) -> Iterator[Document]:
+		if self.index is not None:
+			yield self.index.build(site, registry)
+
 		for page in self.content:
 			yield page.build(site, registry)
 
@@ -98,7 +109,7 @@ class Collection:
 		yield from self.sort.apply(self.content)
 
 
-@dataclass(init=False)
+@dataclass
 class Page:
 	name: str
 	title: str
@@ -106,31 +117,36 @@ class Page:
 	metadata: dict[str, Any]
 	template: Template
 
-	def __init__(
-		self,
+	@classmethod
+	def entry(
+		cls,
 		name: str,
 		metadata: dict[str, Any],
 		template: Template,
 		container: Site | Collection,
-	):
+	) -> Self:
 		if "title" in metadata:
 			title = metadata["title"]
-		elif name == "index":
-			title = container.title
 		else:
 			title = titleize(name)
 
-		if name == "index":
-			permalink = container.permalink
-		else:
-			slug = dasherize(name)
-			permalink = container.permalink.join(slug)
+		slug = dasherize(name)
+		permalink = container.permalink.join(slug)
 
-		self.name = name
-		self.title = title
-		self.permalink = permalink
-		self.metadata = metadata
-		self.template = template
+		return cls(name, title, permalink, metadata, template)
+
+	@classmethod
+	def index(
+		cls,
+		name: str,
+		metadata: dict[str, Any],
+		template: Template,
+		container: Site | Collection,
+	) -> Self:
+		title = metadata.get("title", container.title)
+		permalink = container.permalink
+
+		return cls(name, title, permalink, metadata, template)
 
 	def build(self, site: Site, registry: Registry) -> Document:
 		locals: dict[str, object] = {"site": site, "page": self}
