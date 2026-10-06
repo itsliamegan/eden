@@ -6,7 +6,6 @@ dependencies = [
 	"cmarkgfm>=2025.10.22",
 	"luna",
 	"pybars3>=0.9.7",
-	"toml>=0.10.2",
 ]
 
 [project.scripts]

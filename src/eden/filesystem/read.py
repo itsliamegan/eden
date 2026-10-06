@@ -1,7 +1,6 @@
 from pathlib import Path
+import tomllib
 from typing import Any
-
-from toml import loads as parse_toml
 
 from ..resource import Collection, Layout, Page, Site
 from ..template import Template
@@ -86,7 +85,7 @@ def read_template_parts(file: Path) -> tuple[dict[str, Any], Template]:
 	source = file.read_text()
 	header, body = split_source_parts(source)
 
-	metadata = parse_toml(header)
+	metadata = tomllib.loads(header)
 	template = Template.compile(
 		body,
 		Format.for_file(file),
@@ -98,7 +97,7 @@ def read_template_parts(file: Path) -> tuple[dict[str, Any], Template]:
 
 def read_metadata(file: Path) -> dict[str, Any]:
 	source = file.read_text()
-	metadata = parse_toml(source)
+	metadata = tomllib.loads(source)
 
 	return metadata
 
