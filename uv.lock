@@ -7,6 +7,7 @@ name = "eden"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "helios-url" },
     { name = "luna" },
 ]
 
@@ -17,13 +18,21 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "luna", git = "https://github.com/itsliamegan/luna?branch=main" }]
+requires-dist = [
+    { name = "helios-url", git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Furl&branch=main" },
+    { name = "luna", git = "https://github.com/itsliamegan/luna?branch=main" },
+]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "ruff", specifier = ">=0.16.10" },
     { name = "ty", specifier = ">=0.0.84" },
 ]
+
+[[package]]
+name = "helios-url"
+version = "0.1"
+source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Furl&branch=main#05cd68e3ed0d1cdd27bb3686ba8523549110c06c" }
 
 [[package]]
 name = "luna"
