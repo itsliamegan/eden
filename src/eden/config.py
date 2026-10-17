@@ -67,6 +67,26 @@ class Config:
 				names.add(route.name)
 			routes.append(route)
 
+		# Each item has at most one page, so no two routes may expand to it.
+		collections = []
+		items = []
+		for route in routes:
+			match route.expansion:
+				case PerItemExpansion(collection=collection):
+					if collection in collections:
+						raise ConfigError(
+							f"duplicate route for collection: {collection}"
+						)
+					collections.append(collection)
+				case SingleExpansion(item=item):
+					if item in items:
+						raise ConfigError(f"duplicate route for item: {item}")
+					if item is not None:
+						items.append(item)
+		for item in items:
+			if item.parent in collections:
+				raise ConfigError(f"duplicate route for item: {item}")
+
 		orders = {}
 		for collection, collection_table in table.get("collections", {}).items():
 			orders[collection] = Order(

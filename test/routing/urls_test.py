@@ -153,6 +153,102 @@ def test_rejects_item_from_other_collection():
 		urls.route("article", Item(ContentPath.parse("links/intro"), {}, ""))
 
 
+def test_builds_item_url_from_per_item_route():
+	route = Route(
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	urls = URLs([route], URL.parse("https://example.com"))
+
+	url = urls.item(Item(ContentPath.parse("articles/intro"), {}, ""))
+
+	assert_eq(str(url), "/articles/intro")
+
+
+def test_builds_item_url_from_single_route():
+	route = Route(
+		"about",
+		Pattern.parse("/about"),
+		"page",
+		SingleExpansion(ContentPath.parse("about")),
+	)
+	urls = URLs([route], URL.parse("https://example.com"))
+
+	url = urls.item(Item(ContentPath.parse("about"), {}, ""))
+
+	assert_eq(str(url), "/about")
+
+
+def test_builds_item_url_from_unnamed_route():
+	route = Route(
+		None,
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	urls = URLs([route], URL.parse("https://example.com"))
+
+	url = urls.item(Item(ContentPath.parse("articles/intro"), {}, ""))
+
+	assert_eq(str(url), "/articles/intro")
+
+
+def test_prefixes_item_url_with_base_url_path():
+	route = Route(
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	urls = URLs([route], URL.parse("https://example.com/mesa"))
+
+	url = urls.item(Item(ContentPath.parse("articles/intro"), {}, ""))
+
+	assert_eq(str(url), "/mesa/articles/intro")
+
+
+def test_builds_absolute_item_url():
+	route = Route(
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	urls = URLs([route], URL.parse("https://example.com:8443"))
+
+	url = urls.item(Item(ContentPath.parse("articles/intro"), {}, ""), absolute=True)
+
+	assert_eq(str(url), "https://example.com:8443/articles/intro")
+
+
+def test_rejects_item_no_route_renders():
+	route = Route(
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	urls = URLs([route], URL.parse("https://example.com"))
+
+	with assert_raises(RouteNotFoundError):
+		urls.item(Item(ContentPath.parse("about"), {}, ""))
+
+
+def test_leaves_index_item_out_of_per_item_route():
+	route = Route(
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	urls = URLs([route], URL.parse("https://example.com"))
+
+	with assert_raises(RouteNotFoundError):
+		urls.item(Item(ContentPath.parse("articles"), {}, ""))
+
+
 def test_builds_path_url():
 	urls = URLs([], URL.parse("https://example.com/mesa"))
 

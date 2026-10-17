@@ -143,6 +143,44 @@ def test_rejects_duplicate_route_names():
 		)
 
 
+def test_rejects_two_routes_for_collection():
+	with assert_raises(ConfigError):
+		Config.parse(
+			'[[routes]]\npath = "/articles/{name}"\nview = "articles/show"\n'
+			'collection = "articles"\n'
+			'[[routes]]\npath = "/articles/{name}.json"\nview = "articles/json"\n'
+			'collection = "articles"'
+		)
+
+
+def test_rejects_two_routes_for_item():
+	with assert_raises(ConfigError):
+		Config.parse(
+			'[[routes]]\npath = "/about"\nview = "page"\nitem = "about"\n'
+			'[[routes]]\npath = "/about.json"\nview = "json"\nitem = "about"'
+		)
+
+
+def test_rejects_route_for_item_in_expanded_collection():
+	with assert_raises(ConfigError):
+		Config.parse(
+			'[[routes]]\npath = "/articles/{name}"\nview = "articles/show"\n'
+			'collection = "articles"\n'
+			'[[routes]]\npath = "/intro"\nview = "page"\nitem = "articles/intro"'
+		)
+
+
+def test_reads_routes_for_index_item_and_its_collection():
+	config = Config.parse(
+		'[[routes]]\npath = "/articles/"\nview = "articles/index"\n'
+		'item = "articles"\n'
+		'[[routes]]\npath = "/articles/{name}"\nview = "articles/show"\n'
+		'collection = "articles"'
+	)
+
+	assert_eq(len(config.routes), 2)
+
+
 def test_rejects_route_with_item_and_collection():
 	with assert_raises(ConfigError):
 		Config.parse(
