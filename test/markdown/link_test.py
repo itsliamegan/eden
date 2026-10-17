@@ -9,10 +9,10 @@ def test_renders_link():
 	engine = Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)])
 
 	html = engine.render(
-		Link(href="/writing/tranquility", title=None, content=Markup("Tranquility"))
+		Link(href="/articles/intro", title=None, content=Markup("Intro"))
 	)
 
-	assert_eq(html, '<a href="/writing/tranquility">Tranquility</a>')
+	assert_eq(html, '<a href="/articles/intro">Intro</a>')
 
 
 def test_renders_link_with_title():
@@ -20,13 +20,13 @@ def test_renders_link_with_title():
 
 	html = engine.render(
 		Link(
-			href="/writing/tranquility",
-			title="On quiet",
-			content=Markup("Tranquility"),
+			href="/articles/intro",
+			title="Start here",
+			content=Markup("Intro"),
 		)
 	)
 
 	assert_eq(
 		html,
-		'<a href="/writing/tranquility" title="On quiet">Tranquility</a>',
+		'<a href="/articles/intro" title="Start here">Intro</a>',
 	)

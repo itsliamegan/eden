@@ -7,32 +7,32 @@ from eden.markdown import Renderer, VIEWS_DIR
 
 def test_renders_plain_elements():
 	renderer = Renderer(Engine(memory.Driver({})))
-	item = Item.markdown(ContentPath.parse("writing/tranquility"), "Still *water*.\n")
+	item = Item.markdown(ContentPath.parse("articles/intro"), "Read *this* first.\n")
 
 	body = renderer.render(item)
 
-	assert_eq(body.html, "<p>Still <em>water</em>.</p>\n")
+	assert_eq(body.html, "<p>Read <em>this</em> first.</p>\n")
 
 
 def test_passes_raw_html_through():
 	renderer = Renderer(Engine(memory.Driver({})))
 	item = Item.markdown(
-		ContentPath.parse("writing/tranquility"),
-		'<aside class="note">\n<script>quiet()</script>\n</aside>\n',
+		ContentPath.parse("articles/intro"),
+		'<aside class="note">\n<script>highlight()</script>\n</aside>\n',
 	)
 
 	body = renderer.render(item)
 
 	assert_eq(
 		body.html,
-		'<aside class="note">\n<script>quiet()</script>\n</aside>\n',
+		'<aside class="note">\n<script>highlight()</script>\n</aside>\n',
 	)
 
 
 def test_renders_fenced_code():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
-		ContentPath.parse("guides/database"),
+		ContentPath.parse("articles/intro"),
 		"```python\nimport tomllib\n```\n",
 	)
 
@@ -46,7 +46,7 @@ def test_renders_fenced_code():
 
 def test_renders_fenced_code_without_language():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
-	item = Item.markdown(ContentPath.parse("guides/database"), "```\neden build\n```\n")
+	item = Item.markdown(ContentPath.parse("articles/intro"), "```\neden build\n```\n")
 
 	body = renderer.render(item)
 
@@ -55,7 +55,7 @@ def test_renders_fenced_code_without_language():
 
 def test_renders_indented_code_without_language():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
-	item = Item.markdown(ContentPath.parse("guides/database"), "    eden build\n")
+	item = Item.markdown(ContentPath.parse("articles/intro"), "    eden build\n")
 
 	body = renderer.render(item)
 
@@ -64,7 +64,7 @@ def test_renders_indented_code_without_language():
 
 def test_keeps_entities_in_code_as_written():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
-	item = Item.markdown(ContentPath.parse("guides/database"), "```\n&amp;\n```\n")
+	item = Item.markdown(ContentPath.parse("articles/intro"), "```\n&amp;\n```\n")
 
 	body = renderer.render(item)
 
@@ -73,7 +73,7 @@ def test_keeps_entities_in_code_as_written():
 
 def test_renders_heading():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
-	item = Item.markdown(ContentPath.parse("guides/database"), "## Getting started\n")
+	item = Item.markdown(ContentPath.parse("articles/intro"), "## Getting started\n")
 
 	body = renderer.render(item)
 
@@ -83,16 +83,16 @@ def test_renders_heading():
 def test_collects_headings():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
-		ContentPath.parse("guides/database"),
-		"# Database\n\n## Getting *started*\n",
+		ContentPath.parse("articles/intro"),
+		"# Intro\n\n## Getting *started*\n",
 	)
 
 	body = renderer.render(item)
 
 	assert_eq(len(body.headings), 2)
 	assert_eq(body.headings[0].level, 1)
-	assert_eq(body.headings[0].id, "database")
-	assert_eq(body.headings[0].text, "Database")
+	assert_eq(body.headings[0].id, "intro")
+	assert_eq(body.headings[0].text, "Intro")
 	assert_eq(body.headings[1].level, 2)
 	assert_eq(body.headings[1].id, "getting-started")
 	assert_eq(body.headings[1].text, "Getting started")
@@ -102,7 +102,7 @@ def test_collects_headings():
 def test_numbers_repeated_heading_ids():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
-		ContentPath.parse("guides/database"),
+		ContentPath.parse("articles/intro"),
 		"## Setup\n\n## Setup\n",
 	)
 
@@ -115,7 +115,7 @@ def test_numbers_repeated_heading_ids():
 def test_numbers_repeated_heading_id_past_written_one():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
-		ContentPath.parse("guides/database"),
+		ContentPath.parse("articles/intro"),
 		"## Setup\n\n## Setup 1\n\n## Setup\n",
 	)
 
@@ -126,8 +126,8 @@ def test_numbers_repeated_heading_id_past_written_one():
 
 def test_numbers_heading_ids_per_item():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
-	renderer.render(Item.markdown(ContentPath.parse("guides/database"), "## Setup\n"))
-	item = Item.markdown(ContentPath.parse("guides/routing"), "## Setup\n")
+	renderer.render(Item.markdown(ContentPath.parse("articles/intro"), "## Setup\n"))
+	item = Item.markdown(ContentPath.parse("articles/outro"), "## Setup\n")
 
 	body = renderer.render(item)
 
@@ -136,7 +136,7 @@ def test_numbers_heading_ids_per_item():
 
 def test_gives_heading_without_letters_no_id():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
-	item = Item.markdown(ContentPath.parse("guides/database"), "## ...\n")
+	item = Item.markdown(ContentPath.parse("articles/intro"), "## ...\n")
 
 	body = renderer.render(item)
 
@@ -145,7 +145,7 @@ def test_gives_heading_without_letters_no_id():
 
 def test_leaves_headings_without_ids_unnumbered():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
-	item = Item.markdown(ContentPath.parse("guides/database"), "## ...\n\n## ...\n")
+	item = Item.markdown(ContentPath.parse("articles/intro"), "## ...\n\n## ...\n")
 
 	body = renderer.render(item)
 
@@ -155,17 +155,17 @@ def test_leaves_headings_without_ids_unnumbered():
 def test_renders_footnotes():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
-		ContentPath.parse("writing/tranquility"),
-		"Still water.[^quiet]\n\n[^quiet]: A still lake.\n",
+		ContentPath.parse("articles/intro"),
+		"Read first.[^source]\n\n[^source]: From the manual.\n",
 	)
 
 	body = renderer.render(item)
 
 	assert_eq(
 		body.html,
-		'<p>Still water.<sup id="fnref-quiet"><a href="#fn-quiet">1</a></sup></p>\n'
+		'<p>Read first.<sup id="fnref-source"><a href="#fn-source">1</a></sup></p>\n'
 		'<section class="footnotes">\n<ol>\n'
-		'<li id="fn-quiet">\n<p>A still lake.</p>\n\n<a href="#fnref-quiet">↩</a>\n</li>\n'
+		'<li id="fn-source">\n<p>From the manual.</p>\n\n<a href="#fnref-source">↩</a>\n</li>\n'
 		"</ol>\n</section>\n",
 	)
 
@@ -173,21 +173,21 @@ def test_renders_footnotes():
 def test_numbers_footnotes_by_first_reference():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
-		ContentPath.parse("writing/tranquility"),
-		"Dawn[^dawn] and quiet[^quiet].\n\n"
-		"[^quiet]: A still lake.\n\n"
-		"[^dawn]: Before sunrise.\n",
+		ContentPath.parse("articles/intro"),
+		"First[^aside] and second[^source].\n\n"
+		"[^source]: From the manual.\n\n"
+		"[^aside]: An aside.\n",
 	)
 
 	body = renderer.render(item)
 
 	assert_eq(
 		body.html,
-		'<p>Dawn<sup id="fnref-dawn"><a href="#fn-dawn">1</a></sup> and '
-		'quiet<sup id="fnref-quiet"><a href="#fn-quiet">2</a></sup>.</p>\n'
+		'<p>First<sup id="fnref-aside"><a href="#fn-aside">1</a></sup> and '
+		'second<sup id="fnref-source"><a href="#fn-source">2</a></sup>.</p>\n'
 		'<section class="footnotes">\n<ol>\n'
-		'<li id="fn-dawn">\n<p>Before sunrise.</p>\n\n<a href="#fnref-dawn">↩</a>\n</li>\n'
-		'<li id="fn-quiet">\n<p>A still lake.</p>\n\n<a href="#fnref-quiet">↩</a>\n</li>\n'
+		'<li id="fn-aside">\n<p>An aside.</p>\n\n<a href="#fnref-aside">↩</a>\n</li>\n'
+		'<li id="fn-source">\n<p>From the manual.</p>\n\n<a href="#fnref-source">↩</a>\n</li>\n'
 		"</ol>\n</section>\n",
 	)
 
@@ -195,18 +195,18 @@ def test_numbers_footnotes_by_first_reference():
 def test_keeps_number_of_repeated_footnote_reference():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
-		ContentPath.parse("writing/tranquility"),
-		"Quiet[^quiet], again quiet[^quiet].\n\n[^quiet]: A still lake.\n",
+		ContentPath.parse("articles/intro"),
+		"Read[^source], then reread[^source].\n\n[^source]: From the manual.\n",
 	)
 
 	body = renderer.render(item)
 
 	assert_eq(
 		body.html,
-		'<p>Quiet<sup id="fnref-quiet"><a href="#fn-quiet">1</a></sup>, '
-		'again quiet<sup id="fnref-quiet"><a href="#fn-quiet">1</a></sup>.</p>\n'
+		'<p>Read<sup id="fnref-source"><a href="#fn-source">1</a></sup>, '
+		'then reread<sup id="fnref-source"><a href="#fn-source">1</a></sup>.</p>\n'
 		'<section class="footnotes">\n<ol>\n'
-		'<li id="fn-quiet">\n<p>A still lake.</p>\n\n<a href="#fnref-quiet">↩</a>\n</li>\n'
+		'<li id="fn-source">\n<p>From the manual.</p>\n\n<a href="#fnref-source">↩</a>\n</li>\n'
 		"</ol>\n</section>\n",
 	)
 
@@ -214,34 +214,34 @@ def test_keeps_number_of_repeated_footnote_reference():
 def test_drops_unreferenced_footnote():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
-		ContentPath.parse("writing/tranquility"),
-		"Still water.\n\n[^quiet]: A still lake.\n",
+		ContentPath.parse("articles/intro"),
+		"Read first.\n\n[^source]: From the manual.\n",
 	)
 
 	body = renderer.render(item)
 
-	assert_eq(body.html, "<p>Still water.</p>\n")
+	assert_eq(body.html, "<p>Read first.</p>\n")
 
 
 def test_lists_footnote_referenced_from_footnote():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
-		ContentPath.parse("writing/tranquility"),
-		"Quiet[^quiet].\n\n"
-		"[^quiet]: A still lake.[^dawn]\n\n"
-		"[^dawn]: Before sunrise.\n",
+		ContentPath.parse("articles/intro"),
+		"Read[^source].\n\n"
+		"[^source]: From the manual.[^aside]\n\n"
+		"[^aside]: An aside.\n",
 	)
 
 	body = renderer.render(item)
 
 	assert_eq(
 		body.html,
-		'<p>Quiet<sup id="fnref-quiet"><a href="#fn-quiet">1</a></sup>.</p>\n'
+		'<p>Read<sup id="fnref-source"><a href="#fn-source">1</a></sup>.</p>\n'
 		'<section class="footnotes">\n<ol>\n'
-		'<li id="fn-quiet">\n<p>A still lake.'
-		'<sup id="fnref-dawn"><a href="#fn-dawn">2</a></sup></p>\n\n'
-		'<a href="#fnref-quiet">↩</a>\n</li>\n'
-		'<li id="fn-dawn">\n<p>Before sunrise.</p>\n\n<a href="#fnref-dawn">↩</a>\n</li>\n'
+		'<li id="fn-source">\n<p>From the manual.'
+		'<sup id="fnref-aside"><a href="#fn-aside">2</a></sup></p>\n\n'
+		'<a href="#fnref-source">↩</a>\n</li>\n'
+		'<li id="fn-aside">\n<p>An aside.</p>\n\n<a href="#fnref-aside">↩</a>\n</li>\n'
 		"</ol>\n</section>\n",
 	)
 
@@ -249,40 +249,40 @@ def test_lists_footnote_referenced_from_footnote():
 def test_renders_image():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
-		ContentPath.parse("writing/tranquility"),
-		'![A lake](lake.jpg "At dawn")\n',
+		ContentPath.parse("articles/intro"),
+		'![A diagram](diagram.png "Overview")\n',
 	)
 
 	body = renderer.render(item)
 
 	assert_eq(
 		body.html,
-		'<p><img src="lake.jpg" alt="A lake" title="At dawn"></p>\n',
+		'<p><img src="diagram.png" alt="A diagram" title="Overview"></p>\n',
 	)
 
 
 def test_renders_image_without_title():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
-		ContentPath.parse("writing/tranquility"),
-		"![A lake](lake.jpg)\n",
+		ContentPath.parse("articles/intro"),
+		"![A diagram](diagram.png)\n",
 	)
 
 	body = renderer.render(item)
 
-	assert_eq(body.html, '<p><img src="lake.jpg" alt="A lake"></p>\n')
+	assert_eq(body.html, '<p><img src="diagram.png" alt="A diagram"></p>\n')
 
 
 def test_renders_image_alt_as_plain_text():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
-		ContentPath.parse("writing/tranquility"),
-		"![A *still* lake &amp; `dock`](lake.jpg)\n",
+		ContentPath.parse("articles/intro"),
+		"![A *simple* diagram &amp; `key`](diagram.png)\n",
 	)
 
 	body = renderer.render(item)
 
 	assert_eq(
 		body.html,
-		'<p><img src="lake.jpg" alt="A still lake &amp; dock"></p>\n',
+		'<p><img src="diagram.png" alt="A simple diagram &amp; key"></p>\n',
 	)

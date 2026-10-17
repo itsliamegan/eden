@@ -40,18 +40,18 @@ def test_defaults_entry_points_to_none():
 
 def test_reads_per_item_route():
 	config = Config.parse(
-		'[[routes]]\nname = "essay"\npath = "/writing/{name}.xml"\n'
-		'view = "writing/show"\ncollection = "writing"'
+		'[[routes]]\nname = "article"\npath = "/articles/{name}.xml"\n'
+		'view = "articles/show"\ncollection = "articles"'
 	)
 
 	assert_eq(
 		config.routes,
 		[
 			Route(
-				"essay",
-				Pattern.parse("/writing/{name}.xml"),
-				"writing/show",
-				PerItemExpansion(ContentPath.parse("writing")),
+				"article",
+				Pattern.parse("/articles/{name}.xml"),
+				"articles/show",
+				PerItemExpansion(ContentPath.parse("articles")),
 			),
 		],
 	)
@@ -95,9 +95,9 @@ def test_reads_collection_order():
 
 
 def test_defaults_collection_order_to_ascending():
-	config = Config.parse('[collections.writing]\nsort = "position"')
+	config = Config.parse('[collections.articles]\nsort = "position"')
 
-	assert_eq(config.orders, {ContentPath.parse("writing"): Order("position", "asc")})
+	assert_eq(config.orders, {ContentPath.parse("articles"): Order("position", "asc")})
 
 
 def test_rejects_invalid_toml():
@@ -122,7 +122,7 @@ def test_rejects_unknown_route_key():
 
 def test_rejects_unknown_collection_key():
 	with assert_raises(ConfigError):
-		Config.parse('[collections.writing]\nsort = "date"\ntitle = "Writing"')
+		Config.parse('[collections.articles]\nsort = "date"\ntitle = "Articles"')
 
 
 def test_rejects_route_without_path():
@@ -146,55 +146,55 @@ def test_rejects_duplicate_route_names():
 def test_rejects_route_with_item_and_collection():
 	with assert_raises(ConfigError):
 		Config.parse(
-			'[[routes]]\npath = "/writing/{name}"\nview = "writing/show"\n'
-			'item = "about"\ncollection = "writing"'
+			'[[routes]]\npath = "/articles/{name}"\nview = "articles/show"\n'
+			'item = "about"\ncollection = "articles"'
 		)
 
 
 def test_rejects_placeholder_other_than_name():
 	with assert_raises(ConfigError):
 		Config.parse(
-			'[[routes]]\npath = "/writing/{id}"\nview = "writing/show"\n'
-			'collection = "writing"'
+			'[[routes]]\npath = "/articles/{id}"\nview = "articles/show"\n'
+			'collection = "articles"'
 		)
 
 
 def test_rejects_name_placeholder_with_converter():
 	with assert_raises(ConfigError):
 		Config.parse(
-			'[[routes]]\npath = "/writing/{name:uuid}"\nview = "writing/show"\n'
-			'collection = "writing"'
+			'[[routes]]\npath = "/articles/{name:uuid}"\nview = "articles/show"\n'
+			'collection = "articles"'
 		)
 
 
 def test_rejects_per_item_route_without_name_placeholder():
 	with assert_raises(ConfigError):
 		Config.parse(
-			'[[routes]]\npath = "/writing"\nview = "writing/show"\ncollection = "writing"'
+			'[[routes]]\npath = "/articles"\nview = "articles/show"\ncollection = "articles"'
 		)
 
 
 def test_rejects_per_item_route_ending_in_slash():
 	with assert_raises(ConfigError):
 		Config.parse(
-			'[[routes]]\npath = "/writing/{name}/"\nview = "writing/show"\n'
-			'collection = "writing"'
+			'[[routes]]\npath = "/articles/{name}/"\nview = "articles/show"\n'
+			'collection = "articles"'
 		)
 
 
 def test_rejects_single_path_with_name_placeholder():
 	with assert_raises(ConfigError):
-		Config.parse('[[routes]]\npath = "/writing/{name}"\nview = "writing/show"')
+		Config.parse('[[routes]]\npath = "/articles/{name}"\nview = "articles/show"')
 
 
 def test_rejects_collection_without_sort():
 	with assert_raises(ConfigError):
-		Config.parse('[collections.writing]\norder = "desc"')
+		Config.parse('[collections.articles]\norder = "desc"')
 
 
 def test_rejects_unknown_collection_order():
 	with assert_raises(ConfigError):
-		Config.parse('[collections.writing]\nsort = "date"\norder = "sideways"')
+		Config.parse('[collections.articles]\nsort = "date"\norder = "sideways"')
 
 
 def test_rejects_value_of_wrong_type():
@@ -214,4 +214,4 @@ def test_rejects_invalid_item_path():
 
 def test_rejects_invalid_collection_name():
 	with assert_raises(ConfigError):
-		Config.parse('[collections."writing/"]\nsort = "date"')
+		Config.parse('[collections."articles/"]\nsort = "date"')

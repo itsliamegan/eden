@@ -7,6 +7,6 @@ from eden.markdown import Footnote, VIEWS_DIR
 def test_renders_footnote():
 	engine = Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)])
 
-	html = engine.render(Footnote(number=1, id="quiet"))
+	html = engine.render(Footnote(number=1, id="source"))
 
-	assert_eq(html, '<sup id="fnref-quiet"><a href="#fn-quiet">1</a></sup>')
+	assert_eq(html, '<sup id="fnref-source"><a href="#fn-source">1</a></sup>')

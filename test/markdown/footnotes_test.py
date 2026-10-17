@@ -11,8 +11,8 @@ def test_renders_footnotes():
 	html = engine.render(
 		Footnotes(
 			notes=[
-				Note(1, "quiet", Markup("<p>A still lake.</p>")),
-				Note(2, "dawn", Markup("<p>Before sunrise.</p>")),
+				Note(1, "source", Markup("<p>From the manual.</p>")),
+				Note(2, "aside", Markup("<p>An aside.</p>")),
 			]
 		)
 	)
@@ -20,7 +20,7 @@ def test_renders_footnotes():
 	assert_eq(
 		html,
 		'<section class="footnotes">\n<ol>\n'
-		'<li id="fn-quiet">\n<p>A still lake.</p>\n<a href="#fnref-quiet">↩</a>\n</li>\n'
-		'<li id="fn-dawn">\n<p>Before sunrise.</p>\n<a href="#fnref-dawn">↩</a>\n</li>\n'
+		'<li id="fn-source">\n<p>From the manual.</p>\n<a href="#fnref-source">↩</a>\n</li>\n'
+		'<li id="fn-aside">\n<p>An aside.</p>\n<a href="#fnref-aside">↩</a>\n</li>\n'
 		"</ol>\n</section>",
 	)
