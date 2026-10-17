@@ -10,10 +10,12 @@ SAFE_CHARACTERS = "/#:()*?=%@+,&"
 
 
 class Destinations:
-	"""The URLs that the destinations of links and images in items' Markdown stand for.
+	"""The URLs for link and image destinations in Markdown.
 
-	A destination with a scheme or a host passes through, and so does any other
-	relative reference but a link to a Markdown file, which names an item.
+	A destination with a scheme or a host passes through unchanged. A path
+	that starts with a slash gets the base URL's path. A link to a Markdown
+	file names an item and gets that item's URL. Any other relative reference
+	passes through unchanged.
 	"""
 
 	def __init__(self, urls: URLs, items: Mapping[ContentPath, Item]):
