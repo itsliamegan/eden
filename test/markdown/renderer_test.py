@@ -1,8 +1,8 @@
-from helios.view import Engine, memory
+from helios.view import Engine, file, memory
 from luna.test.assertion import assert_eq
 
 from eden.content import ContentPath, Item
-from eden.markdown import Renderer
+from eden.markdown import Renderer, VIEWS_DIR
 
 
 def test_renders_plain_elements():
@@ -29,77 +29,50 @@ def test_passes_raw_html_through():
 	)
 
 
-def test_renders_fenced_code_through_component():
-	renderer = Renderer(
-		Engine(
-			memory.Driver(
-				{"components/markdown/code": "[{{ language }}] {{ code }}"},
-			)
-		)
-	)
+def test_renders_fenced_code():
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
 		ContentPath.parse("guides/database"),
-		"```python\nprint(1 < 2)\n```\n",
+		"```python\neden build\n```\n",
 	)
 
 	body = renderer.render(item)
 
-	assert_eq(body.html, "[python] print(1 &lt; 2)\n\n")
+	assert_eq(
+		body.html,
+		'<pre><code class="language-python">eden build\n</code></pre>\n',
+	)
 
 
 def test_renders_fenced_code_without_language():
-	renderer = Renderer(
-		Engine(
-			memory.Driver(
-				{"components/markdown/code": "[{{ language }}] {{ code }}"},
-			)
-		)
-	)
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(ContentPath.parse("guides/database"), "```\neden build\n```\n")
 
 	body = renderer.render(item)
 
-	assert_eq(body.html, "[] eden build\n\n")
+	assert_eq(body.html, "<pre><code>eden build\n</code></pre>\n")
 
 
 def test_renders_indented_code_without_language():
-	renderer = Renderer(
-		Engine(
-			memory.Driver(
-				{"components/markdown/code": "[{{ language }}] {{ code }}"},
-			)
-		)
-	)
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(ContentPath.parse("guides/database"), "    eden build\n")
 
 	body = renderer.render(item)
 
-	assert_eq(body.html, "[] eden build\n\n")
+	assert_eq(body.html, "<pre><code>eden build\n</code></pre>\n")
 
 
 def test_keeps_entities_in_code_as_written():
-	renderer = Renderer(
-		Engine(
-			memory.Driver(
-				{"components/markdown/code": "[{{ language }}] {{ code }}"},
-			)
-		)
-	)
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(ContentPath.parse("guides/database"), "```\n&amp;\n```\n")
 
 	body = renderer.render(item)
 
-	assert_eq(body.html, "[] &amp;amp;\n\n")
+	assert_eq(body.html, "<pre><code>&amp;amp;\n</code></pre>\n")
 
 
-def test_renders_image_through_component():
-	renderer = Renderer(
-		Engine(
-			memory.Driver(
-				{"components/markdown/image": "[{{ src }}] [{{ alt }}] [{{ title }}]"},
-			)
-		)
-	)
+def test_renders_image():
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
 		ContentPath.parse("writing/tranquility"),
 		'![A lake](lake.jpg "At dawn")\n',
@@ -107,17 +80,14 @@ def test_renders_image_through_component():
 
 	body = renderer.render(item)
 
-	assert_eq(body.html, "<p>[lake.jpg] [A lake] [At dawn]</p>\n")
+	assert_eq(
+		body.html,
+		'<p><img src="lake.jpg" alt="A lake" title="At dawn"></p>\n',
+	)
 
 
 def test_renders_image_without_title():
-	renderer = Renderer(
-		Engine(
-			memory.Driver(
-				{"components/markdown/image": "[{{ src }}] [{{ alt }}] [{{ title }}]"},
-			)
-		)
-	)
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
 		ContentPath.parse("writing/tranquility"),
 		"![A lake](lake.jpg)\n",
@@ -125,17 +95,11 @@ def test_renders_image_without_title():
 
 	body = renderer.render(item)
 
-	assert_eq(body.html, "<p>[lake.jpg] [A lake] []</p>\n")
+	assert_eq(body.html, '<p><img src="lake.jpg" alt="A lake"></p>\n')
 
 
 def test_renders_image_alt_as_plain_text():
-	renderer = Renderer(
-		Engine(
-			memory.Driver(
-				{"components/markdown/image": "[{{ src }}] [{{ alt }}] [{{ title }}]"},
-			)
-		)
-	)
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
 		ContentPath.parse("writing/tranquility"),
 		"![A *still* lake &amp; `dock`](lake.jpg)\n",
@@ -143,4 +107,7 @@ def test_renders_image_alt_as_plain_text():
 
 	body = renderer.render(item)
 
-	assert_eq(body.html, "<p>[lake.jpg] [A still lake &amp; dock] []</p>\n")
+	assert_eq(
+		body.html,
+		'<p><img src="lake.jpg" alt="A still lake &amp; dock"></p>\n',
+	)
