@@ -2,6 +2,7 @@ from pathlib import Path
 
 from .body import Body
 from .code import Code
+from .error import MarkdownError
 from .footnote import Footnote
 from .footnotes import Footnotes, Note
 from .heading import Heading
@@ -20,6 +21,7 @@ __all__ = [
 	"Heading",
 	"Image",
 	"Link",
+	"MarkdownError",
 	"Note",
 	"Renderer",
 ]

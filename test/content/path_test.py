@@ -27,6 +27,45 @@ def test_gives_no_parent_at_top_of_content():
 	assert_eq(path.parent, None)
 
 
+def test_resolves_sibling_reference():
+	path = ContentPath.parse("articles/intro")
+
+	assert_eq(path.resolve("outro"), ContentPath.parse("articles/outro"))
+
+
+def test_resolves_nested_reference():
+	path = ContentPath.parse("guides/database")
+
+	assert_eq(
+		path.resolve("database/indexes"), ContentPath.parse("guides/database/indexes")
+	)
+
+
+def test_resolves_parent_reference():
+	path = ContentPath.parse("articles/intro")
+
+	assert_eq(path.resolve("../about"), ContentPath.parse("about"))
+
+
+def test_resolves_current_reference():
+	path = ContentPath.parse("articles/intro")
+
+	assert_eq(path.resolve("./outro"), ContentPath.parse("articles/outro"))
+
+
+def test_resolves_reference_from_top_of_content():
+	path = ContentPath.parse("about")
+
+	assert_eq(path.resolve("articles/intro"), ContentPath.parse("articles/intro"))
+
+
+def test_rejects_reference_leaving_content():
+	path = ContentPath.parse("articles/intro")
+
+	with assert_raises(ContentError):
+		path.resolve("../../about")
+
+
 def test_prints_as_text():
 	path = ContentPath.parse("articles/intro")
 
