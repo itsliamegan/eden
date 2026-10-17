@@ -3,6 +3,8 @@ name = "eden"
 version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
+	"cattrs>=26.2.1",
+	"helios-url",
 	"luna",
 ]
 
@@ -17,6 +19,7 @@ requires = ["uv_build"]
 build-backend = "uv_build"
 
 [tool.uv.sources]
+helios-url = { git = "https://github.com/itsliamegan/helios", subdirectory = "packages/url", branch = "main" }
 luna = { git = "https://github.com/itsliamegan/luna", branch = "main" }
 
 [tool.ruff]
