@@ -11,10 +11,10 @@ class Collection:
 	"""A directory in a site's content. Includes its items and its index.
 
 	Operations return Items, rather than Collection, because a sorted or joined
-	sequence is no longer a directory and has no name or index item.
+	sequence is no longer a directory and has no path or index item.
 	"""
 
-	name: ContentPath
+	path: ContentPath
 	items: Items
 	index: Item | None = None
 

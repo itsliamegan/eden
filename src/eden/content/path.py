@@ -6,7 +6,7 @@ from .error import ContentError
 
 @dataclass
 class ContentPath:
-	"""A place in a site's content that names either an item or a collection.
+	"""A place in a site's content that names an item, a collection, or both.
 
 	A file's path doesn't have its extension. All paths are relative to the
 	site's content directory.
