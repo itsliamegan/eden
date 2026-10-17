@@ -7,7 +7,7 @@ from helios.url import Pattern
 class Route:
 	"""A path that renders a view. Includes how it expands into pages.
 
-	The expansion names content as `site.toml` writes it, and is resolved
+	The expansion names content as the site config writes it and is resolved
 	against the site's content when the route is expanded into pages.
 	"""
 
@@ -19,13 +19,13 @@ class Route:
 
 @dataclass
 class SingleExpansion:
-	"""One page, for an item by its path in the content, or for no item."""
+	"""An expansion of a route into a page with a single item or no item."""
 
 	item: str | None
 
 
 @dataclass
 class PerItemExpansion:
-	"""One page for each item in a collection, by the collection's name."""
+	"""An expansion of a route into a page for every item in a collection."""
 
 	collection: str

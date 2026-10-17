@@ -16,7 +16,7 @@ COLLECTION_KEYS = {"sort", "order"}
 
 @dataclass
 class Config:
-	"""A site's parsed `site.toml`, which holds how the site is built."""
+	"""A site's parsed config, which holds how the site is built."""
 
 	base_url: URL
 	scripts: list[str]
@@ -30,9 +30,9 @@ class Config:
 			table = tomllib.loads(text)
 		except tomllib.TOMLDecodeError as error:
 			raise ConfigError(f"invalid TOML: {error}") from error
-		Config.reject_unknown_keys(table, SITE_KEYS, "site")
+		reject_unknown_keys(table, SITE_KEYS, "site")
 		assets = table.get("assets", {})
-		Config.reject_unknown_keys(assets, ASSETS_KEYS, "assets")
+		reject_unknown_keys(assets, ASSETS_KEYS, "assets")
 
 		routes = []
 		names = set()
@@ -65,24 +65,26 @@ class Config:
 
 		if url.host is None:
 			raise ConfigError(f"url is not absolute: {text}")
+
 		return url
 
 	@staticmethod
 	def parse_route(table: dict[str, Any]) -> Route:
-		Config.reject_unknown_keys(table, ROUTE_KEYS, "route")
+		reject_unknown_keys(table, ROUTE_KEYS, "route")
 		for key in ("path", "view"):
 			if key not in table:
 				raise ConfigError(f"missing key in route: {key}")
 		if "item" in table and "collection" in table:
-			raise ConfigError(f"route has an item and a collection: {table["path"]}")
+			raise ConfigError(
+				f"route declares both an item and a collection: {table["path"]}"
+			)
 
 		try:
 			path = Pattern.parse(table["path"])
 		except ValueError as error:
 			raise ConfigError(f"invalid route path: {table["path"]}") from error
 		for parameter in path.parameters.values():
-			# Pattern accepts any name and converter, but an item's name is the
-			# only value a route can fill in.
+			# Only accept a single parameter "name" that uses the "str" converter.
 			if parameter.name != "name" or not isinstance(parameter.converter, Str):
 				raise ConfigError(f"placeholder other than {{name}}: {table["path"]}")
 
@@ -101,7 +103,7 @@ class Config:
 
 	@staticmethod
 	def parse_order(name: str, table: dict[str, Any]) -> Order:
-		Config.reject_unknown_keys(table, COLLECTION_KEYS, f"collection {name}")
+		reject_unknown_keys(table, COLLECTION_KEYS, f"collection {name}")
 		if "sort" not in table:
 			raise ConfigError(f"missing key in collection {name}: sort")
 
@@ -113,11 +115,11 @@ class Config:
 			case direction:
 				raise ConfigError(f"unknown order in collection {name}: {direction}")
 
-	@staticmethod
-	def reject_unknown_keys(table: dict[str, Any], keys: set[str], where: str):
-		for key in table:
-			if key not in keys:
-				raise ConfigError(f"unknown key in {where}: {key}")
+
+def reject_unknown_keys(table: dict[str, Any], keys: set[str], where: str):
+	for key in table:
+		if key not in keys:
+			raise ConfigError(f"unknown key in {where}: {key}")
 
 
 class ConfigError(Exception):
