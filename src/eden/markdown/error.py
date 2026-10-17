@@ -1,0 +1,2 @@
+class MarkdownError(ValueError):
+	pass

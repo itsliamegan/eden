@@ -2,9 +2,12 @@ from dataclasses import dataclass
 
 from markupsafe import Markup
 
+from .heading import Heading
+
 
 @dataclass
 class Body:
-	"""An item's rendered Markdown."""
+	"""An item's rendered Markdown and the headings it renders, in order."""
 
 	html: Markup
+	headings: list[Heading]

@@ -1,8 +1,8 @@
 from helios.view import Engine, file, memory
-from luna.test.assertion import assert_eq
+from luna.test.assertion import assert_eq, assert_raises
 
 from eden.content import ContentPath, Item
-from eden.markdown import Renderer, VIEWS_DIR
+from eden.markdown import MarkdownError, Renderer, VIEWS_DIR
 
 
 def test_renders_plain_elements():
@@ -69,6 +69,98 @@ def test_keeps_entities_in_code_as_written():
 	body = renderer.render(item)
 
 	assert_eq(body.html, "<pre><code>&amp;amp;\n</code></pre>\n")
+
+
+def test_renders_heading():
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
+	item = Item.markdown(ContentPath.parse("guides/database"), "## Getting started\n")
+
+	body = renderer.render(item)
+
+	assert_eq(body.html, '<h2 id="getting-started">Getting started</h2>\n')
+
+
+def test_collects_headings():
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
+	item = Item.markdown(
+		ContentPath.parse("guides/database"),
+		"# Database\n\n## Getting *started*\n",
+	)
+
+	body = renderer.render(item)
+
+	assert_eq(len(body.headings), 2)
+	assert_eq(body.headings[0].level, 1)
+	assert_eq(body.headings[0].id, "database")
+	assert_eq(body.headings[0].text, "Database")
+	assert_eq(body.headings[1].level, 2)
+	assert_eq(body.headings[1].id, "getting-started")
+	assert_eq(body.headings[1].text, "Getting started")
+	assert_eq(body.headings[1].content, "Getting <em>started</em>")
+
+
+def test_hyphenates_heading_id():
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
+	item = Item.markdown(
+		ContentPath.parse("guides/database"),
+		"## What's new, in 2.0?\n",
+	)
+
+	body = renderer.render(item)
+
+	assert_eq(body.headings[0].id, "what-s-new-in-2-0")
+
+
+def test_keeps_letters_in_heading_id():
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
+	item = Item.markdown(ContentPath.parse("writing/tranquility"), "## Café\n")
+
+	body = renderer.render(item)
+
+	assert_eq(body.headings[0].id, "café")
+
+
+def test_numbers_repeated_heading_ids():
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
+	item = Item.markdown(
+		ContentPath.parse("guides/database"),
+		"## Setup\n\n## Setup\n",
+	)
+
+	body = renderer.render(item)
+
+	assert_eq(body.headings[0].id, "setup")
+	assert_eq(body.headings[1].id, "setup-1")
+
+
+def test_numbers_repeated_heading_id_past_written_one():
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
+	item = Item.markdown(
+		ContentPath.parse("guides/database"),
+		"## Setup\n\n## Setup 1\n\n## Setup\n",
+	)
+
+	body = renderer.render(item)
+
+	assert_eq(body.headings[2].id, "setup-2")
+
+
+def test_numbers_heading_ids_per_item():
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
+	renderer.render(Item.markdown(ContentPath.parse("guides/database"), "## Setup\n"))
+	item = Item.markdown(ContentPath.parse("guides/routing"), "## Setup\n")
+
+	body = renderer.render(item)
+
+	assert_eq(body.headings[0].id, "setup")
+
+
+def test_rejects_heading_without_text_for_id():
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
+	item = Item.markdown(ContentPath.parse("guides/database"), "## ...\n")
+
+	with assert_raises(MarkdownError):
+		renderer.render(item)
 
 
 def test_renders_image():

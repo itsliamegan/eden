@@ -1,4 +1,5 @@
 import html
+import re
 from typing import Any
 from urllib.parse import quote
 
@@ -9,7 +10,11 @@ from markupsafe import Markup
 from ..content import Item
 from .body import Body
 from .code import Code
+from .error import MarkdownError
+from .heading import Heading
 from .image import Image
+
+SEPARATORS = re.compile(r"[\W_]+")
 
 
 class Renderer:
@@ -21,26 +26,20 @@ class Renderer:
 
 	def render(self, item: Item) -> Body:
 		document = self.markdown.parse(item.text)
-		with ElementRenderer(self.engine) as renderer:
+		with ElementRenderer(self.engine, item) as renderer:
 			text = renderer.render(document)
-		return Body(Markup(text))
+		return Body(Markup(text), renderer.headings)
 
 
 class ElementRenderer(HTMLRenderer):
 	"""Renders one item's parsed Markdown and holds what that rendering collects."""
 
-	def __init__(self, engine: Engine):
+	def __init__(self, engine: Engine, item: Item):
 		super().__init__()
 		self.engine = engine
-
-	def render_image(self, element: inline.Image) -> str:
-		return self.engine.render(
-			Image(
-				src=self.destination(element.dest),
-				alt=self.text(element),
-				title=self.title(element.title),
-			)
-		)
+		self.item = item
+		self.headings: list[Heading] = []
+		self.ids: set[str] = set()
 
 	def render_fenced_code(self, element: block.FencedCode) -> str:
 		code = Code(
@@ -53,6 +52,26 @@ class ElementRenderer(HTMLRenderer):
 		code = Code(language=None, code=self.text(element))
 		return self.engine.render(code) + "\n"
 
+	def render_heading(self, element: block.Heading) -> str:
+		text = self.text(element)
+		heading = Heading(
+			level=element.level,
+			id=self.unique_id(text),
+			text=text,
+			content=Markup(self.render_children(element)),
+		)
+		self.headings.append(heading)
+		return self.engine.render(heading) + "\n"
+
+	def render_image(self, element: inline.Image) -> str:
+		return self.engine.render(
+			Image(
+				src=self.destination(element.dest),
+				alt=self.text(element),
+				title=self.title(element.title),
+			)
+		)
+
 	def text(self, element: Any) -> str:
 		# Code is literal, so an entity in it stays as written.
 		if isinstance(element, inline.CodeSpan) or (
@@ -63,6 +82,21 @@ class ElementRenderer(HTMLRenderer):
 			return html.unescape(element.children)
 		else:
 			return "".join(self.text(child) for child in element.children)
+
+	def unique_id(self, text: str) -> str:
+		base = SEPARATORS.sub("-", text.lower()).strip("-")
+		if base == "":
+			raise MarkdownError(
+				f"heading has no text for an id: {text!r} in {self.item.path}"
+			)
+
+		id = base
+		number = 0
+		while id in self.ids:
+			number += 1
+			id = f"{base}-{number}"
+		self.ids.add(id)
+		return id
 
 	def destination(self, destination: str) -> str:
 		return quote(html.unescape(destination), safe="/#:()*?=%@+,&")
