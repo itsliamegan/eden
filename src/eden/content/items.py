@@ -7,7 +7,10 @@ from .item import Item
 
 @dataclass
 class Items:
-	"""A sequence of items in order, whose operations each return a new one."""
+	"""An ordered sequence of items.
+
+	Each operation returns a new object.
+	"""
 
 	items: list[Item]
 

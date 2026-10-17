@@ -7,10 +7,10 @@ from .items import Items
 
 @dataclass
 class Collection:
-	"""A directory in a site's content, with its items and its index item.
+	"""A directory in a site's content. Includes its items and its index.
 
-	Its operations return plain items, because a sorted or joined sequence is no
-	longer a directory and has no name or index item.
+	Operations return Items, rather than Collection, because a sorted or joined
+	sequence is no longer a directory and has no name or index item.
 	"""
 
 	name: str
