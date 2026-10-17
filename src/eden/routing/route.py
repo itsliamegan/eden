@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 from helios.url import Pattern
 
+from ..content import ContentPath
+
 
 @dataclass
 class Route:
@@ -21,11 +23,11 @@ class Route:
 class SingleExpansion:
 	"""An expansion of a route into a page with a single item or no item."""
 
-	item: str | None
+	item: ContentPath | None
 
 
 @dataclass
 class PerItemExpansion:
 	"""An expansion of a route into a page for every item in a collection."""
 
-	collection: str
+	collection: ContentPath

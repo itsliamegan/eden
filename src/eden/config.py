@@ -5,7 +5,7 @@ from typing import Any, Self
 from helios.url import Pattern, URL
 from helios.url.convert import Str
 
-from .content import Order
+from .content import ContentError, ContentPath, Order
 from .routing import PerItemExpansion, Route, SingleExpansion
 
 SITE_KEYS = {"url", "assets", "routes", "collections"}
@@ -22,7 +22,7 @@ class Config:
 	scripts: list[str]
 	styles: list[str]
 	routes: list[Route]
-	orders: dict[str, Order]
+	orders: dict[ContentPath, Order]
 
 	@classmethod
 	def parse(cls, text: str) -> Self:
@@ -46,7 +46,9 @@ class Config:
 
 		orders = {}
 		for name, collection_table in table.get("collections", {}).items():
-			orders[name] = Config.parse_order(name, collection_table)
+			orders[Config.parse_content_path(name)] = Config.parse_order(
+				name, collection_table
+			)
 
 		return cls(
 			Config.parse_url(table.get("url", "http://localhost:3000")),
@@ -67,6 +69,13 @@ class Config:
 			raise ConfigError(f"url is not absolute: {text}")
 
 		return url
+
+	@staticmethod
+	def parse_content_path(text: str) -> ContentPath:
+		try:
+			return ContentPath.parse(text)
+		except ContentError as error:
+			raise ConfigError(str(error)) from error
 
 	@staticmethod
 	def parse_route(table: dict[str, Any]) -> Route:
@@ -93,11 +102,14 @@ class Config:
 				raise ConfigError(f"per-item route without {{name}}: {table["path"]}")
 			if path.trailing_slash:
 				raise ConfigError(f"per-item route ends in a slash: {table["path"]}")
-			expansion = PerItemExpansion(table["collection"])
+			expansion = PerItemExpansion(Config.parse_content_path(table["collection"]))
 		else:
 			if path.parameters:
 				raise ConfigError(f"single route with {{name}}: {table["path"]}")
-			expansion = SingleExpansion(table.get("item"))
+			if "item" in table:
+				expansion = SingleExpansion(Config.parse_content_path(table["item"]))
+			else:
+				expansion = SingleExpansion(None)
 
 		return Route(table.get("name"), path, table["view"], expansion)
 

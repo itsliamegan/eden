@@ -2,7 +2,7 @@ from helios.url import Pattern
 from luna.test.assertion import assert_eq, assert_raises
 
 from eden.config import Config, ConfigError
-from eden.content import Order
+from eden.content import ContentPath, Order
 from eden.routing import PerItemExpansion, Route, SingleExpansion
 
 
@@ -50,7 +50,7 @@ def test_reads_per_item_route():
 				"essay",
 				Pattern.parse("/writing/{name}.xml"),
 				"writing/show",
-				PerItemExpansion("writing"),
+				PerItemExpansion(ContentPath.parse("writing")),
 			),
 		],
 	)
@@ -69,7 +69,7 @@ def test_reads_single_path_route():
 				"guide",
 				Pattern.parse("/guide/"),
 				"page",
-				SingleExpansion("guides/database"),
+				SingleExpansion(ContentPath.parse("guides/database")),
 			)
 		],
 	)
@@ -88,13 +88,15 @@ def test_reads_collection_order():
 		'[collections."guides/database"]\nsort = "date"\norder = "desc"'
 	)
 
-	assert_eq(config.orders, {"guides/database": Order("date", "desc")})
+	assert_eq(
+		config.orders, {ContentPath.parse("guides/database"): Order("date", "desc")}
+	)
 
 
 def test_defaults_collection_order_to_ascending():
 	config = Config.parse('[collections.writing]\nsort = "position"')
 
-	assert_eq(config.orders, {"writing": Order("position", "asc")})
+	assert_eq(config.orders, {ContentPath.parse("writing"): Order("position", "asc")})
 
 
 def test_rejects_invalid_toml():

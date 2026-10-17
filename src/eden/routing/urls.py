@@ -1,5 +1,4 @@
 from collections.abc import Sequence
-from pathlib import PurePosixPath
 
 from helios.url import Pattern, URL
 
@@ -34,8 +33,7 @@ class URLs:
 		if isinstance(route.expansion, PerItemExpansion):
 			if item is None:
 				raise RouteError(f"route needs an item: {name}")
-			collection = PurePosixPath(route.expansion.collection)
-			if PurePosixPath(item.path).parent != collection:
+			if item.path.parent != route.expansion.collection:
 				raise RouteError(f"item not in route's collection: {item.path}")
 			path = route.path.path({"name": item.name})
 		else:
