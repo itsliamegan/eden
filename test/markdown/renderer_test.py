@@ -152,6 +152,100 @@ def test_leaves_headings_without_ids_unnumbered():
 	assert_is(body.headings[1].id, None)
 
 
+def test_renders_footnotes():
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
+	item = Item.markdown(
+		ContentPath.parse("writing/tranquility"),
+		"Still water.[^quiet]\n\n[^quiet]: A still lake.\n",
+	)
+
+	body = renderer.render(item)
+
+	assert_eq(
+		body.html,
+		'<p>Still water.<sup id="fnref-quiet"><a href="#fn-quiet">1</a></sup></p>\n'
+		'<section class="footnotes">\n<ol>\n'
+		'<li id="fn-quiet">\n<p>A still lake.</p>\n\n<a href="#fnref-quiet">↩</a>\n</li>\n'
+		"</ol>\n</section>\n",
+	)
+
+
+def test_numbers_footnotes_by_first_reference():
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
+	item = Item.markdown(
+		ContentPath.parse("writing/tranquility"),
+		"Dawn[^dawn] and quiet[^quiet].\n\n"
+		"[^quiet]: A still lake.\n\n"
+		"[^dawn]: Before sunrise.\n",
+	)
+
+	body = renderer.render(item)
+
+	assert_eq(
+		body.html,
+		'<p>Dawn<sup id="fnref-dawn"><a href="#fn-dawn">1</a></sup> and '
+		'quiet<sup id="fnref-quiet"><a href="#fn-quiet">2</a></sup>.</p>\n'
+		'<section class="footnotes">\n<ol>\n'
+		'<li id="fn-dawn">\n<p>Before sunrise.</p>\n\n<a href="#fnref-dawn">↩</a>\n</li>\n'
+		'<li id="fn-quiet">\n<p>A still lake.</p>\n\n<a href="#fnref-quiet">↩</a>\n</li>\n'
+		"</ol>\n</section>\n",
+	)
+
+
+def test_keeps_number_of_repeated_footnote_reference():
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
+	item = Item.markdown(
+		ContentPath.parse("writing/tranquility"),
+		"Quiet[^quiet], again quiet[^quiet].\n\n[^quiet]: A still lake.\n",
+	)
+
+	body = renderer.render(item)
+
+	assert_eq(
+		body.html,
+		'<p>Quiet<sup id="fnref-quiet"><a href="#fn-quiet">1</a></sup>, '
+		'again quiet<sup id="fnref-quiet"><a href="#fn-quiet">1</a></sup>.</p>\n'
+		'<section class="footnotes">\n<ol>\n'
+		'<li id="fn-quiet">\n<p>A still lake.</p>\n\n<a href="#fnref-quiet">↩</a>\n</li>\n'
+		"</ol>\n</section>\n",
+	)
+
+
+def test_drops_unreferenced_footnote():
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
+	item = Item.markdown(
+		ContentPath.parse("writing/tranquility"),
+		"Still water.\n\n[^quiet]: A still lake.\n",
+	)
+
+	body = renderer.render(item)
+
+	assert_eq(body.html, "<p>Still water.</p>\n")
+
+
+def test_lists_footnote_referenced_from_footnote():
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
+	item = Item.markdown(
+		ContentPath.parse("writing/tranquility"),
+		"Quiet[^quiet].\n\n"
+		"[^quiet]: A still lake.[^dawn]\n\n"
+		"[^dawn]: Before sunrise.\n",
+	)
+
+	body = renderer.render(item)
+
+	assert_eq(
+		body.html,
+		'<p>Quiet<sup id="fnref-quiet"><a href="#fn-quiet">1</a></sup>.</p>\n'
+		'<section class="footnotes">\n<ol>\n'
+		'<li id="fn-quiet">\n<p>A still lake.'
+		'<sup id="fnref-dawn"><a href="#fn-dawn">2</a></sup></p>\n\n'
+		'<a href="#fnref-quiet">↩</a>\n</li>\n'
+		'<li id="fn-dawn">\n<p>Before sunrise.</p>\n\n<a href="#fnref-dawn">↩</a>\n</li>\n'
+		"</ol>\n</section>\n",
+	)
+
+
 def test_renders_image():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(

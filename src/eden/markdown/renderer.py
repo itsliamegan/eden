@@ -5,11 +5,14 @@ from urllib.parse import quote
 from helios.view import Engine
 from luna import inflect
 from marko import HTMLRenderer, Markdown, block, inline
+from marko.ext import footnote
 from markupsafe import Markup
 
 from ..content import Item
 from .body import Body
 from .code import Code
+from .footnote import Footnote
+from .footnotes import Footnotes, Note
 from .heading import Heading
 from .image import Image
 
@@ -19,7 +22,7 @@ class Renderer:
 
 	def __init__(self, engine: Engine):
 		self.engine = engine
-		self.markdown = Markdown()
+		self.markdown = Markdown(extensions=["footnote"])
 
 	def render(self, item: Item) -> Body:
 		document = self.markdown.parse(item.text)
@@ -36,6 +39,20 @@ class ElementRenderer(HTMLRenderer):
 		self.engine = engine
 		self.headings: list[Heading] = []
 		self.ids: set[str] = set()
+		self.labels: list[str] = []
+
+	def render_document(self, element: footnote.Document) -> str:
+		text = self.render_children(element)
+		if not self.labels:
+			return text
+
+		notes = []
+		# A definition can reference another footnote, whose label is appended
+		# while this loop runs, so the loop reaches it too.
+		for number, label in enumerate(self.labels, 1):
+			content = Markup(self.render_children(element.footnotes[label]))
+			notes.append(Note(number, label, content))
+		return text + self.engine.render(Footnotes(notes=notes)) + "\n"
 
 	def render_fenced_code(self, element: block.FencedCode) -> str:
 		code = Code(
@@ -59,6 +76,9 @@ class ElementRenderer(HTMLRenderer):
 		self.headings.append(heading)
 		return self.engine.render(heading) + "\n"
 
+	def render_footnote_def(self, element: footnote.FootnoteDef) -> str:
+		return ""
+
 	def render_image(self, element: inline.Image) -> str:
 		return self.engine.render(
 			Image(
@@ -67,6 +87,12 @@ class ElementRenderer(HTMLRenderer):
 				title=self.title(element.title),
 			)
 		)
+
+	def render_footnote_ref(self, element: footnote.FootnoteRef) -> str:
+		if element.label not in self.labels:
+			self.labels.append(element.label)
+		number = self.labels.index(element.label) + 1
+		return self.engine.render(Footnote(number=number, id=element.label))
 
 	def text(self, element: Any) -> str:
 		# Code is literal, so an entity in it stays as written.
