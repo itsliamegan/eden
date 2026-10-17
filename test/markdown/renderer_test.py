@@ -33,14 +33,14 @@ def test_renders_fenced_code():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
 		ContentPath.parse("guides/database"),
-		"```python\neden build\n```\n",
+		"```python\nimport tomllib\n```\n",
 	)
 
 	body = renderer.render(item)
 
 	assert_eq(
 		body.html,
-		'<pre><code class="language-python">eden build\n</code></pre>\n',
+		'<pre><code class="language-python">import tomllib\n</code></pre>\n',
 	)
 
 
