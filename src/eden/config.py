@@ -14,10 +14,11 @@ from .routing.route import PerItemExpansion, SingleExpansion
 
 DEFAULT_BASE_URL = URL.parse("http://localhost:3000")
 
-# cattrs makes a str from any value by default, so the str hook rejects values
-# of other types. The other hooks build eden's types from text.
 CONVERTER = Converter(forbid_extra_keys=True)
+
+# Register a strict string hook because cattrs permissively converts values with str.
 CONVERTER.register_structure_hook(str, lambda value, _: require_string(value))
+
 CONVERTER.register_structure_hook(
 	URL,
 	lambda value, _: URL.parse(require_string(value)),
