@@ -3,7 +3,8 @@ from luna.test.assertion import assert_eq, assert_raises
 
 from eden.config import Config, ConfigError
 from eden.content import ContentPath, Order
-from eden.routing import PerItemExpansion, Route, SingleExpansion
+from eden.routing import Route
+from eden.routing.route import PerItemExpansion, SingleExpansion
 
 
 def test_reads_base_url():

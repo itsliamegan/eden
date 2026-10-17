@@ -8,7 +8,8 @@ from helios.url import Pattern, URL
 from helios.url.convert import Str
 
 from .content import ContentPath, Order
-from .routing import PerItemExpansion, Route, SingleExpansion
+from .routing import Route
+from .routing.route import PerItemExpansion, SingleExpansion
 
 # cattrs makes a str from any value by default, so the str hook rejects values
 # of other types. The other hooks build eden's types from text.

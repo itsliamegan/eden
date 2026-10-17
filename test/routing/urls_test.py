@@ -3,13 +3,12 @@ from luna.test.assertion import assert_eq, assert_raises
 
 from eden.content import ContentPath, Item
 from eden.routing import (
-	PerItemExpansion,
 	Route,
 	RouteError,
 	RouteNotFoundError,
-	SingleExpansion,
 	URLs,
 )
+from eden.routing.route import PerItemExpansion, SingleExpansion
 
 
 def test_builds_per_item_route_url():
