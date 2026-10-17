@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from dataclasses import dataclass
 
 from helios.url import Pattern, URL
 
@@ -7,12 +8,17 @@ from .error import RouteError, RouteNotFoundError
 from .route import PerItemExpansion, Route
 
 
+@dataclass(init=False)
 class URLs:
 	"""A builder of URLs for routes and paths under a base URL.
 
 	The base URL's path prefixes every URL, because the host serves the site
 	there.
 	"""
+
+	routes: dict[str, Route]
+	base_url: URL
+	prefix: Pattern
 
 	def __init__(self, routes: Sequence[Route], base_url: URL):
 		if base_url.scheme is None or base_url.host is None:
