@@ -5,6 +5,9 @@ from helios.view import Engine
 from luna import inflect
 from marko import HTMLRenderer, Markdown, block, inline
 from marko.ext import footnote
+from marko.ext.gfm import elements as gfm
+from marko.ext.gfm.renderer import GFMRendererMixin
+from marko.helpers import MarkoExtension
 from markupsafe import Markup
 
 from ..content import Item
@@ -17,6 +20,9 @@ from .heading import Heading
 from .image import Image
 from .link import Link
 
+# GFM's tables without the rest of GFM, which would also filter raw HTML.
+TABLES = MarkoExtension(elements=[gfm.Table, gfm.TableRow, gfm.TableCell])
+
 
 class Renderer:
 	"""A renderer for Markdown items that renders elements as components."""
@@ -24,7 +30,7 @@ class Renderer:
 	def __init__(self, engine: Engine, destinations: Destinations):
 		self.engine = engine
 		self.destinations = destinations
-		self.markdown = Markdown(extensions=["footnote"])
+		self.markdown = Markdown(extensions=["footnote", TABLES])
 
 	def render(self, item: Item) -> Body:
 		document = self.markdown.parse(item.text)
@@ -35,6 +41,10 @@ class Renderer:
 
 class ElementRenderer(HTMLRenderer):
 	"""A renderer for one item's parsed Markdown that holds what it collects while rendering."""
+
+	render_table = GFMRendererMixin.render_table
+	render_table_row = GFMRendererMixin.render_table_row
+	render_table_cell = GFMRendererMixin.render_table_cell
 
 	def __init__(self, engine: Engine, destinations: Destinations, item: Item):
 		super().__init__()

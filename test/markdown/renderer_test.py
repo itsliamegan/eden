@@ -38,6 +38,29 @@ def test_passes_raw_html_through():
 	)
 
 
+def test_renders_table():
+	renderer = Renderer(
+		Engine(memory.Driver({})),
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
+	)
+	item = Item.markdown(
+		ContentPath.parse("articles/intro"),
+		"| Command | Effect |\n| :-- | --: |\n| `eden build` | Writes *public* |\n",
+	)
+
+	body = renderer.render(item)
+
+	assert_eq(
+		body.html,
+		"<table>\n<thead>\n<tr>\n"
+		'<th align="left">Command</th>\n<th align="right">Effect</th>\n'
+		"</tr>\n</thead>\n<tbody>\n<tr>\n"
+		'<td align="left"><code>eden build</code></td>\n'
+		'<td align="right">Writes <em>public</em></td>\n'
+		"</tr>\n</tbody></table>",
+	)
+
+
 def test_renders_fenced_code():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
