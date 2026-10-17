@@ -1,15 +1,12 @@
-from uuid import uuid4
-
 from luna.test.assertion import assert_eq, assert_not_eq, assert_raises
 
 from eden.content import ContentError, Item
 
 
 def test_reads_front_matter_and_body():
-	title = uuid4().hex
-	item = Item.markdown("about", f'+++\ntitle = "{title}"\n+++\nFirst\n')
+	item = Item.markdown("about", '+++\ntitle = "About"\n+++\nFirst\n')
 
-	assert_eq(item.fields, {"title": title})
+	assert_eq(item.fields, {"title": "About"})
 	assert_eq(item.text, "First\n")
 
 
@@ -52,25 +49,22 @@ def test_rejects_unclosed_front_matter():
 
 
 def test_reads_toml_fields():
-	title = uuid4().hex
-	item = Item.toml("info", f'title = "{title}"\n')
+	item = Item.toml("info", 'title = "Liam Egan"\n')
 
-	assert_eq(item.fields, {"title": title})
+	assert_eq(item.fields, {"title": "Liam Egan"})
 	assert_eq(item.text, "")
 
 
 def test_names_item_by_last_segment():
-	name = uuid4().hex
-	item = Item.toml(f"writing/{name}", "")
+	item = Item.toml("writing/tranquility", "")
 
-	assert_eq(item.name, name)
+	assert_eq(item.name, "tranquility")
 
 
 def test_gives_field():
-	title = uuid4().hex
-	item = Item.toml("about", f'title = "{title}"\n')
+	item = Item.toml("about", 'title = "About"\n')
 
-	assert_eq(item.field("title"), title)
+	assert_eq(item.field("title"), "About")
 
 
 def test_gives_nothing_for_unset_field():
@@ -80,10 +74,14 @@ def test_gives_nothing_for_unset_field():
 
 
 def test_equals_item_at_same_path():
-	path = f"writing/{uuid4().hex}"
+	first = Item.toml("writing/tranquility", "title = 1")
+	second = Item.toml("writing/tranquility", "title = 2")
 
-	assert_eq(Item.toml(path, "title = 1"), Item.toml(path, "title = 2"))
+	assert_eq(first, second)
 
 
 def test_differs_from_item_at_other_path():
-	assert_not_eq(Item.toml(uuid4().hex, ""), Item.toml(uuid4().hex, ""))
+	first = Item.toml("writing/tranquility", "")
+	second = Item.toml("writing/serenity", "")
+
+	assert_not_eq(first, second)
