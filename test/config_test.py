@@ -194,3 +194,23 @@ def test_rejects_collection_without_sort():
 def test_rejects_unknown_collection_order():
 	with assert_raises(ConfigError):
 		Config.parse('[collections.writing]\nsort = "date"\norder = "sideways"')
+
+
+def test_rejects_value_of_wrong_type():
+	with assert_raises(ConfigError):
+		Config.parse('[[routes]]\npath = 5\nview = "home"')
+
+
+def test_rejects_invalid_base_url():
+	with assert_raises(ConfigError):
+		Config.parse('url = "https://"')
+
+
+def test_rejects_invalid_item_path():
+	with assert_raises(ConfigError):
+		Config.parse('[[routes]]\npath = "/about"\nview = "page"\nitem = "/about"')
+
+
+def test_rejects_invalid_collection_name():
+	with assert_raises(ConfigError):
+		Config.parse('[collections."writing/"]\nsort = "date"')

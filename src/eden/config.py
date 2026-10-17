@@ -1,17 +1,24 @@
 from dataclasses import dataclass
 import tomllib
-from typing import Any, Self
+from typing import Any, Literal, NotRequired, Self, TypedDict
 
+from cattrs import Converter, transform_error
+from cattrs.errors import BaseValidationError
 from helios.url import Pattern, URL
 from helios.url.convert import Str
 
-from .content import ContentError, ContentPath, Order
+from .content import ContentPath, Order
 from .routing import PerItemExpansion, Route, SingleExpansion
 
-SITE_KEYS = {"url", "assets", "routes", "collections"}
-ASSETS_KEYS = {"scripts", "styles"}
-ROUTE_KEYS = {"name", "path", "view", "item", "collection"}
-COLLECTION_KEYS = {"sort", "order"}
+# cattrs makes a str from any value by default, so the str hook rejects values
+# of other types. The other hooks build eden's types from text.
+CONVERTER = Converter(forbid_extra_keys=True)
+CONVERTER.register_structure_hook(str, lambda value, _: string(value))
+CONVERTER.register_structure_hook(URL, lambda value, _: URL.parse(string(value)))
+CONVERTER.register_structure_hook(
+	ContentPath,
+	lambda value, _: ContentPath.parse(string(value)),
+)
 
 
 @dataclass
@@ -27,17 +34,20 @@ class Config:
 	@classmethod
 	def parse(cls, text: str) -> Self:
 		try:
-			table = tomllib.loads(text)
+			table = CONVERTER.structure(tomllib.loads(text), SiteTable)
 		except tomllib.TOMLDecodeError as error:
 			raise ConfigError(f"invalid TOML: {error}") from error
-		reject_unknown_keys(table, SITE_KEYS, "site")
-		assets = table.get("assets", {})
-		reject_unknown_keys(assets, ASSETS_KEYS, "assets")
+		except BaseValidationError as error:
+			raise ConfigError(", ".join(transform_error(error))) from error
+
+		base_url = table.get("url", URL.parse("http://localhost:3000"))
+		if base_url.host is None:
+			raise ConfigError(f"url is not absolute: {base_url}")
 
 		routes = []
 		names = set()
 		for route_table in table.get("routes", []):
-			route = Config.parse_route(route_table)
+			route = Config.route(route_table)
 			if route.name in names:
 				raise ConfigError(f"duplicate route name: {route.name}")
 			if route.name is not None:
@@ -45,13 +55,15 @@ class Config:
 			routes.append(route)
 
 		orders = {}
-		for name, collection_table in table.get("collections", {}).items():
-			orders[Config.parse_content_path(name)] = Config.parse_order(
-				name, collection_table
+		for collection, collection_table in table.get("collections", {}).items():
+			orders[collection] = Order(
+				collection_table["sort"],
+				collection_table.get("order", "asc"),
 			)
 
+		assets = table.get("assets", AssetsTable())
 		return cls(
-			Config.parse_url(table.get("url", "http://localhost:3000")),
+			base_url,
 			assets.get("scripts", []),
 			assets.get("styles", []),
 			routes,
@@ -59,30 +71,7 @@ class Config:
 		)
 
 	@staticmethod
-	def parse_url(text: str) -> URL:
-		try:
-			url = URL.parse(text)
-		except ValueError as error:
-			raise ConfigError(f"invalid url: {text}") from error
-
-		if url.host is None:
-			raise ConfigError(f"url is not absolute: {text}")
-
-		return url
-
-	@staticmethod
-	def parse_content_path(text: str) -> ContentPath:
-		try:
-			return ContentPath.parse(text)
-		except ContentError as error:
-			raise ConfigError(str(error)) from error
-
-	@staticmethod
-	def parse_route(table: dict[str, Any]) -> Route:
-		reject_unknown_keys(table, ROUTE_KEYS, "route")
-		for key in ("path", "view"):
-			if key not in table:
-				raise ConfigError(f"missing key in route: {key}")
+	def route(table: RouteTable) -> Route:
 		if "item" in table and "collection" in table:
 			raise ConfigError(
 				f"route declares both an item and a collection: {table["path"]}"
@@ -102,36 +91,45 @@ class Config:
 				raise ConfigError(f"per-item route without {{name}}: {table["path"]}")
 			if path.trailing_slash:
 				raise ConfigError(f"per-item route ends in a slash: {table["path"]}")
-			expansion = PerItemExpansion(Config.parse_content_path(table["collection"]))
+			expansion = PerItemExpansion(table["collection"])
 		else:
 			if path.parameters:
 				raise ConfigError(f"single route with {{name}}: {table["path"]}")
-			if "item" in table:
-				expansion = SingleExpansion(Config.parse_content_path(table["item"]))
-			else:
-				expansion = SingleExpansion(None)
+			expansion = SingleExpansion(table.get("item"))
 
 		return Route(table.get("name"), path, table["view"], expansion)
 
-	@staticmethod
-	def parse_order(name: str, table: dict[str, Any]) -> Order:
-		reject_unknown_keys(table, COLLECTION_KEYS, f"collection {name}")
-		if "sort" not in table:
-			raise ConfigError(f"missing key in collection {name}: sort")
 
-		match table.get("order", "asc"):
-			case "asc":
-				return Order(table["sort"], "asc")
-			case "desc":
-				return Order(table["sort"], "desc")
-			case direction:
-				raise ConfigError(f"unknown order in collection {name}: {direction}")
+class SiteTable(TypedDict):
+	url: NotRequired[URL]
+	assets: NotRequired[AssetsTable]
+	routes: NotRequired[list[RouteTable]]
+	collections: NotRequired[dict[ContentPath, CollectionTable]]
 
 
-def reject_unknown_keys(table: dict[str, Any], keys: set[str], where: str):
-	for key in table:
-		if key not in keys:
-			raise ConfigError(f"unknown key in {where}: {key}")
+class AssetsTable(TypedDict):
+	scripts: NotRequired[list[str]]
+	styles: NotRequired[list[str]]
+
+
+class RouteTable(TypedDict):
+	path: str
+	view: str
+	name: NotRequired[str]
+	item: NotRequired[ContentPath]
+	collection: NotRequired[ContentPath]
+
+
+class CollectionTable(TypedDict):
+	sort: str
+	order: NotRequired[Literal["asc", "desc"]]
+
+
+def string(value: Any) -> str:
+	if not isinstance(value, str):
+		raise TypeError(f"expected a string: {value!r}")
+
+	return value
 
 
 class ConfigError(Exception):
