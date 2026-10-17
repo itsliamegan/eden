@@ -48,7 +48,7 @@ class Config:
 			descriptions = transform_error(
 				error,
 				path="config",
-				format_exception=describe,
+				format_exception=format_validation_exception,
 			)
 			raise ConfigError(", ".join(descriptions)) from error
 
@@ -144,7 +144,7 @@ def require_string(value: Any) -> str:
 	return value
 
 
-def describe(exception: BaseException, target: type | None) -> str:
+def format_validation_exception(exception: BaseException, target: type | None) -> str:
 	description = format_exception(exception, target)
 	# The hooks raise these with a message that says what is wrong with the
 	# value, which cattrs' description leaves out.
