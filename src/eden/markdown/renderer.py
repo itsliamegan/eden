@@ -18,7 +18,7 @@ from .image import Image
 
 
 class Renderer:
-	"""Renders items' Markdown, through components for the elements a site can restyle."""
+	"""A renderer for Markdown items that renders elements as components."""
 
 	def __init__(self, engine: Engine):
 		self.engine = engine
@@ -32,7 +32,7 @@ class Renderer:
 
 
 class ElementRenderer(HTMLRenderer):
-	"""Renders one item's parsed Markdown and holds what that rendering collects."""
+	"""A renderer for one item's parsed Markdown that holds what it collects while rendering."""
 
 	def __init__(self, engine: Engine):
 		super().__init__()
@@ -47,8 +47,8 @@ class ElementRenderer(HTMLRenderer):
 			return text
 
 		notes = []
-		# A definition can reference another footnote, whose label is appended
-		# while this loop runs, so the loop reaches it too.
+		# A footnote definition can reference another footnote, whose label is
+		# appended while this loop runs, so the loop reaches it too.
 		for number, label in enumerate(self.labels, 1):
 			content = Markup(self.render_children(element.footnotes[label]))
 			notes.append(Note(number, label, content))
