@@ -2,6 +2,7 @@ from pathlib import Path
 
 from .body import Body
 from .code import Code
+from .destinations import Destinations
 from .error import MarkdownError
 from .footnote import Footnote
 from .footnotes import Footnotes, Note
@@ -16,6 +17,7 @@ __all__ = [
 	"VIEWS_DIR",
 	"Body",
 	"Code",
+	"Destinations",
 	"Footnote",
 	"Footnotes",
 	"Heading",

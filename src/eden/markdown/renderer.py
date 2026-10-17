@@ -1,7 +1,5 @@
-from collections.abc import Mapping
 import html
 from typing import Any
-from urllib.parse import SplitResult, quote, urlsplit
 
 from helios.view import Engine
 from luna import inflect
@@ -9,42 +7,28 @@ from marko import HTMLRenderer, Markdown, block, inline
 from marko.ext import footnote
 from markupsafe import Markup
 
-from ..content import ContentPath, Item
-from ..routing import URLs
+from ..content import Item
 from .body import Body
 from .code import Code
-from .error import MarkdownError
+from .destinations import Destinations
 from .footnote import Footnote
 from .footnotes import Footnotes, Note
 from .heading import Heading
 from .image import Image
 from .link import Link
 
-SAFE_CHARACTERS = "/#:()*?=%@+,&"
-
 
 class Renderer:
 	"""A renderer for Markdown items that renders elements as components."""
 
-	def __init__(
-		self,
-		engine: Engine,
-		urls: URLs,
-		page_paths: Mapping[ContentPath, str],
-	):
+	def __init__(self, engine: Engine, destinations: Destinations):
 		self.engine = engine
-		self.urls = urls
-		self.page_paths = page_paths
+		self.destinations = destinations
 		self.markdown = Markdown(extensions=["footnote"])
 
 	def render(self, item: Item) -> Body:
 		document = self.markdown.parse(item.text)
-		with ElementRenderer(
-			self.engine,
-			self.urls,
-			self.page_paths,
-			item,
-		) as renderer:
+		with ElementRenderer(self.engine, self.destinations, item) as renderer:
 			text = renderer.render(document)
 		return Body(Markup(text), renderer.headings)
 
@@ -52,17 +36,10 @@ class Renderer:
 class ElementRenderer(HTMLRenderer):
 	"""A renderer for one item's parsed Markdown that holds what it collects while rendering."""
 
-	def __init__(
-		self,
-		engine: Engine,
-		urls: URLs,
-		page_paths: Mapping[ContentPath, str],
-		item: Item,
-	):
+	def __init__(self, engine: Engine, destinations: Destinations, item: Item):
 		super().__init__()
 		self.engine = engine
-		self.urls = urls
-		self.page_paths = page_paths
+		self.destinations = destinations
 		self.item = item
 		self.headings: list[Heading] = []
 		self.ids: set[str] = set()
@@ -109,7 +86,7 @@ class ElementRenderer(HTMLRenderer):
 	def render_link(self, element: inline.Link) -> str:
 		return self.engine.render(
 			Link(
-				href=self.href(element.dest),
+				href=self.destinations.link(element.dest, self.item),
 				title=self.title(element.title),
 				content=Markup(self.render_children(element)),
 			)
@@ -118,7 +95,7 @@ class ElementRenderer(HTMLRenderer):
 	def render_auto_link(self, element: inline.AutoLink) -> str:
 		return self.engine.render(
 			Link(
-				href=self.href(element.dest),
+				href=self.destinations.link(element.dest, self.item),
 				title=None,
 				content=Markup(self.render_children(element)),
 			)
@@ -127,7 +104,7 @@ class ElementRenderer(HTMLRenderer):
 	def render_image(self, element: inline.Image) -> str:
 		return self.engine.render(
 			Image(
-				src=self.src(element.dest),
+				src=self.destinations.image(element.dest),
 				alt=self.text(element),
 				title=self.title(element.title),
 			)
@@ -162,45 +139,6 @@ class ElementRenderer(HTMLRenderer):
 			id = f"{base}-{number}"
 		self.ids.add(id)
 		return id
-
-	def href(self, destination: str) -> str:
-		text = html.unescape(destination)
-		reference = urlsplit(text)
-		if reference.scheme or reference.netloc:
-			url = text
-		elif reference.path.startswith("/"):
-			url = self.path_url(reference)
-		elif reference.path.endswith(".md"):
-			url = self.item_url(reference)
-		else:
-			url = text
-		return quote(url, safe=SAFE_CHARACTERS)
-
-	def src(self, destination: str) -> str:
-		text = html.unescape(destination)
-		reference = urlsplit(text)
-		if reference.scheme or reference.netloc:
-			url = text
-		elif reference.path.startswith("/"):
-			url = self.path_url(reference)
-		else:
-			url = text
-		return quote(url, safe=SAFE_CHARACTERS)
-
-	def path_url(self, reference: SplitResult) -> str:
-		path = self.urls.path(reference.path).path
-		return reference._replace(path=path).geturl()
-
-	def item_url(self, reference: SplitResult) -> str:
-		target = self.item.path.resolve(reference.path.removesuffix(".md"))
-		page_path = self.page_paths.get(target)
-		if page_path is None:
-			raise MarkdownError(
-				f"link target has no page: {target} in {self.item.path}"
-			)
-
-		path = self.urls.path(page_path).path
-		return reference._replace(path=path).geturl()
 
 	def title(self, title: str | None) -> str | None:
 		if title is None:

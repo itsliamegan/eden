@@ -1,17 +1,17 @@
-from helios.url import URL
+from helios.url import Pattern, URL
 from helios.view import Engine, file, memory
-from luna.test.assertion import assert_eq, assert_is, assert_raises
+from luna.test.assertion import assert_eq, assert_is
 
 from eden.content import ContentPath, Item
-from eden.markdown import MarkdownError, Renderer, VIEWS_DIR
-from eden.routing import URLs
+from eden.markdown import Destinations, Renderer, VIEWS_DIR
+from eden.routing import Route, URLs
+from eden.routing.route import PerItemExpansion
 
 
 def test_renders_plain_elements():
 	renderer = Renderer(
 		Engine(memory.Driver({})),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(ContentPath.parse("articles/intro"), "Read *this* first.\n")
 
@@ -23,8 +23,7 @@ def test_renders_plain_elements():
 def test_passes_raw_html_through():
 	renderer = Renderer(
 		Engine(memory.Driver({})),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(
 		ContentPath.parse("articles/intro"),
@@ -42,8 +41,7 @@ def test_passes_raw_html_through():
 def test_renders_fenced_code():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(
 		ContentPath.parse("articles/intro"),
@@ -61,8 +59,7 @@ def test_renders_fenced_code():
 def test_renders_fenced_code_without_language():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(ContentPath.parse("articles/intro"), "```\neden build\n```\n")
 
@@ -74,8 +71,7 @@ def test_renders_fenced_code_without_language():
 def test_renders_indented_code_without_language():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(ContentPath.parse("articles/intro"), "    eden build\n")
 
@@ -87,8 +83,7 @@ def test_renders_indented_code_without_language():
 def test_keeps_entities_in_code_as_written():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(ContentPath.parse("articles/intro"), "```\n&amp;\n```\n")
 
@@ -100,8 +95,7 @@ def test_keeps_entities_in_code_as_written():
 def test_renders_heading():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(ContentPath.parse("articles/intro"), "## Getting started\n")
 
@@ -113,8 +107,7 @@ def test_renders_heading():
 def test_collects_headings():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(
 		ContentPath.parse("articles/intro"),
@@ -136,8 +129,7 @@ def test_collects_headings():
 def test_numbers_repeated_heading_ids():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(
 		ContentPath.parse("articles/intro"),
@@ -153,8 +145,7 @@ def test_numbers_repeated_heading_ids():
 def test_numbers_repeated_heading_id_past_written_one():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(
 		ContentPath.parse("articles/intro"),
@@ -169,8 +160,7 @@ def test_numbers_repeated_heading_id_past_written_one():
 def test_numbers_heading_ids_per_item():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	renderer.render(Item.markdown(ContentPath.parse("articles/intro"), "## Setup\n"))
 	item = Item.markdown(ContentPath.parse("articles/outro"), "## Setup\n")
@@ -183,8 +173,7 @@ def test_numbers_heading_ids_per_item():
 def test_gives_heading_without_letters_no_id():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(ContentPath.parse("articles/intro"), "## ...\n")
 
@@ -196,8 +185,7 @@ def test_gives_heading_without_letters_no_id():
 def test_leaves_headings_without_ids_unnumbered():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(ContentPath.parse("articles/intro"), "## ...\n\n## ...\n")
 
@@ -209,8 +197,7 @@ def test_leaves_headings_without_ids_unnumbered():
 def test_renders_footnotes():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(
 		ContentPath.parse("articles/intro"),
@@ -231,8 +218,7 @@ def test_renders_footnotes():
 def test_numbers_footnotes_by_first_reference():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(
 		ContentPath.parse("articles/intro"),
@@ -257,8 +243,7 @@ def test_numbers_footnotes_by_first_reference():
 def test_keeps_number_of_repeated_footnote_reference():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(
 		ContentPath.parse("articles/intro"),
@@ -280,8 +265,7 @@ def test_keeps_number_of_repeated_footnote_reference():
 def test_drops_unreferenced_footnote():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(
 		ContentPath.parse("articles/intro"),
@@ -296,8 +280,7 @@ def test_drops_unreferenced_footnote():
 def test_lists_footnote_referenced_from_footnote():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(
 		ContentPath.parse("articles/intro"),
@@ -323,8 +306,7 @@ def test_lists_footnote_referenced_from_footnote():
 def test_renders_link():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(
 		ContentPath.parse("articles/intro"),
@@ -343,8 +325,7 @@ def test_renders_link():
 def test_renders_link_without_title():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(
 		ContentPath.parse("articles/intro"),
@@ -359,8 +340,7 @@ def test_renders_link_without_title():
 def test_renders_autolink():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(
 		ContentPath.parse("articles/intro"),
@@ -375,152 +355,32 @@ def test_renders_autolink():
 	)
 
 
-def test_passes_other_schemes_through():
+def test_renders_link_to_item_through_destinations():
+	route = Route(
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	outro = Item(ContentPath.parse("articles/outro"), {}, "")
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
-	)
-	item = Item.markdown(
-		ContentPath.parse("articles/intro"),
-		"[Write](mailto:intro@example.com)\n",
-	)
-
-	body = renderer.render(item)
-
-	assert_eq(body.html, '<p><a href="mailto:intro@example.com">Write</a></p>\n')
-
-
-def test_passes_fragment_through():
-	renderer = Renderer(
-		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
-	)
-	item = Item.markdown(ContentPath.parse("articles/intro"), "[Setup](#setup)\n")
-
-	body = renderer.render(item)
-
-	assert_eq(body.html, '<p><a href="#setup">Setup</a></p>\n')
-
-
-def test_passes_relative_file_through():
-	renderer = Renderer(
-		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
-	)
-	item = Item.markdown(ContentPath.parse("articles/intro"), "[Slides](slides.pdf)\n")
-
-	body = renderer.render(item)
-
-	assert_eq(body.html, '<p><a href="slides.pdf">Slides</a></p>\n')
-
-
-def test_encodes_destination():
-	renderer = Renderer(
-		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
-	)
-	item = Item.markdown(
-		ContentPath.parse("articles/intro"),
-		"[Slides](<intro slides.pdf>)\n",
-	)
-
-	body = renderer.render(item)
-
-	assert_eq(body.html, '<p><a href="intro%20slides.pdf">Slides</a></p>\n')
-
-
-def test_builds_url_for_path():
-	renderer = Renderer(
-		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com/mesa")),
-		{},
-	)
-	item = Item.markdown(ContentPath.parse("articles/intro"), "[About](/about)\n")
-
-	body = renderer.render(item)
-
-	assert_eq(body.html, '<p><a href="/mesa/about">About</a></p>\n')
-
-
-def test_keeps_query_and_fragment_of_path():
-	renderer = Renderer(
-		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com/mesa")),
-		{},
-	)
-	item = Item.markdown(
-		ContentPath.parse("articles/intro"),
-		"[Team](/about?view=all#team)\n",
-	)
-
-	body = renderer.render(item)
-
-	assert_eq(body.html, '<p><a href="/mesa/about?view=all#team">Team</a></p>\n')
-
-
-def test_builds_url_for_linked_item():
-	renderer = Renderer(
-		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com/mesa")),
-		{ContentPath.parse("articles/outro"): "/articles/outro"},
+		Destinations(
+			URLs([route], URL.parse("https://example.com")),
+			{outro.path: outro},
+		),
 	)
 	item = Item.markdown(ContentPath.parse("articles/intro"), "[Outro](outro.md)\n")
 
 	body = renderer.render(item)
 
-	assert_eq(body.html, '<p><a href="/mesa/articles/outro">Outro</a></p>\n')
+	assert_eq(body.html, '<p><a href="/articles/outro">Outro</a></p>\n')
 
 
-def test_resolves_linked_item_against_item_path():
+def test_renders_image_path_through_destinations():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{ContentPath.parse("about"): "/about"},
-	)
-	item = Item.markdown(ContentPath.parse("articles/intro"), "[About](../about.md)\n")
-
-	body = renderer.render(item)
-
-	assert_eq(body.html, '<p><a href="/about">About</a></p>\n')
-
-
-def test_keeps_fragment_of_linked_item():
-	renderer = Renderer(
-		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{ContentPath.parse("articles/outro"): "/articles/outro"},
-	)
-	item = Item.markdown(
-		ContentPath.parse("articles/intro"),
-		"[Setup](outro.md#setup)\n",
-	)
-
-	body = renderer.render(item)
-
-	assert_eq(body.html, '<p><a href="/articles/outro#setup">Setup</a></p>\n')
-
-
-def test_rejects_link_to_item_without_page():
-	renderer = Renderer(
-		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
-	)
-	item = Item.markdown(ContentPath.parse("articles/intro"), "[Outro](outro.md)\n")
-
-	with assert_raises(MarkdownError):
-		renderer.render(item)
-
-
-def test_builds_url_for_image_path():
-	renderer = Renderer(
-		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com/mesa")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com/mesa")), {}),
 	)
 	item = Item.markdown(
 		ContentPath.parse("articles/intro"),
@@ -535,8 +395,7 @@ def test_builds_url_for_image_path():
 def test_renders_image():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(
 		ContentPath.parse("articles/intro"),
@@ -554,8 +413,7 @@ def test_renders_image():
 def test_renders_image_without_title():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(
 		ContentPath.parse("articles/intro"),
@@ -570,8 +428,7 @@ def test_renders_image_without_title():
 def test_renders_image_alt_as_plain_text():
 	renderer = Renderer(
 		Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]),
-		URLs([], URL.parse("https://example.com")),
-		{},
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
 	)
 	item = Item.markdown(
 		ContentPath.parse("articles/intro"),
