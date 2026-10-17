@@ -4,6 +4,7 @@ from typing import Any, Literal, NotRequired, Self, TypedDict
 
 from cattrs import Converter, transform_error
 from cattrs.errors import BaseValidationError
+from cattrs.v import format_exception
 from helios.url import Pattern, URL
 from helios.url.convert import Str
 
@@ -11,14 +12,19 @@ from .content import ContentPath, Order
 from .routing import Route
 from .routing.route import PerItemExpansion, SingleExpansion
 
+DEFAULT_BASE_URL = URL.parse("http://localhost:3000")
+
 # cattrs makes a str from any value by default, so the str hook rejects values
 # of other types. The other hooks build eden's types from text.
 CONVERTER = Converter(forbid_extra_keys=True)
-CONVERTER.register_structure_hook(str, lambda value, _: string(value))
-CONVERTER.register_structure_hook(URL, lambda value, _: URL.parse(string(value)))
+CONVERTER.register_structure_hook(str, lambda value, _: require_string(value))
+CONVERTER.register_structure_hook(
+	URL,
+	lambda value, _: URL.parse(require_string(value)),
+)
 CONVERTER.register_structure_hook(
 	ContentPath,
-	lambda value, _: ContentPath.parse(string(value)),
+	lambda value, _: ContentPath.parse(require_string(value)),
 )
 
 
@@ -39,9 +45,14 @@ class Config:
 		except tomllib.TOMLDecodeError as error:
 			raise ConfigError(f"invalid TOML: {error}") from error
 		except BaseValidationError as error:
-			raise ConfigError(", ".join(transform_error(error))) from error
+			descriptions = transform_error(
+				error,
+				path="config",
+				format_exception=describe,
+			)
+			raise ConfigError(", ".join(descriptions)) from error
 
-		base_url = table.get("url", URL.parse("http://localhost:3000"))
+		base_url = table.get("url", DEFAULT_BASE_URL)
 		if base_url.host is None:
 			raise ConfigError(f"url is not absolute: {base_url}")
 
@@ -83,7 +94,7 @@ class Config:
 		except ValueError as error:
 			raise ConfigError(f"invalid route path: {table["path"]}") from error
 		for parameter in path.parameters.values():
-			# Only accept a single parameter "name" that uses the "str" converter.
+			# Only accept a single "name" parameter that uses the "str" converter.
 			if parameter.name != "name" or not isinstance(parameter.converter, Str):
 				raise ConfigError(f"placeholder other than {{name}}: {table["path"]}")
 
@@ -126,11 +137,21 @@ class CollectionTable(TypedDict):
 	order: NotRequired[Literal["asc", "desc"]]
 
 
-def string(value: Any) -> str:
+def require_string(value: Any) -> str:
 	if not isinstance(value, str):
-		raise TypeError(f"expected a string: {value!r}")
+		raise TypeError(f"got {value!r}")
 
 	return value
+
+
+def describe(exception: BaseException, target: type | None) -> str:
+	description = format_exception(exception, target)
+	# The hooks raise these with a message that says what is wrong with the
+	# value, which cattrs' description leaves out.
+	if isinstance(exception, (ValueError, TypeError)):
+		return f"{description} ({exception})"
+	else:
+		return description
 
 
 class ConfigError(Exception):
