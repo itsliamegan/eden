@@ -1,20 +1,17 @@
 import html
-import re
 from typing import Any
 from urllib.parse import quote
 
 from helios.view import Engine
+from luna import inflect
 from marko import HTMLRenderer, Markdown, block, inline
 from markupsafe import Markup
 
 from ..content import Item
 from .body import Body
 from .code import Code
-from .error import MarkdownError
 from .heading import Heading
 from .image import Image
-
-SEPARATORS = re.compile(r"[\W_]+")
 
 
 class Renderer:
@@ -26,7 +23,7 @@ class Renderer:
 
 	def render(self, item: Item) -> Body:
 		document = self.markdown.parse(item.text)
-		with ElementRenderer(self.engine, item) as renderer:
+		with ElementRenderer(self.engine) as renderer:
 			text = renderer.render(document)
 		return Body(Markup(text), renderer.headings)
 
@@ -34,10 +31,9 @@ class Renderer:
 class ElementRenderer(HTMLRenderer):
 	"""Renders one item's parsed Markdown and holds what that rendering collects."""
 
-	def __init__(self, engine: Engine, item: Item):
+	def __init__(self, engine: Engine):
 		super().__init__()
 		self.engine = engine
-		self.item = item
 		self.headings: list[Heading] = []
 		self.ids: set[str] = set()
 
@@ -83,12 +79,10 @@ class ElementRenderer(HTMLRenderer):
 		else:
 			return "".join(self.text(child) for child in element.children)
 
-	def unique_id(self, text: str) -> str:
-		base = SEPARATORS.sub("-", text.lower()).strip("-")
+	def unique_id(self, text: str) -> str | None:
+		base = inflect.dash(text)
 		if base == "":
-			raise MarkdownError(
-				f"heading has no text for an id: {text!r} in {self.item.path}"
-			)
+			return None
 
 		id = base
 		number = 0

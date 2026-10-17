@@ -1,8 +1,8 @@
 from helios.view import Engine, file, memory
-from luna.test.assertion import assert_eq, assert_raises
+from luna.test.assertion import assert_eq, assert_is
 
 from eden.content import ContentPath, Item
-from eden.markdown import MarkdownError, Renderer, VIEWS_DIR
+from eden.markdown import Renderer, VIEWS_DIR
 
 
 def test_renders_plain_elements():
@@ -99,27 +99,6 @@ def test_collects_headings():
 	assert_eq(body.headings[1].content, "Getting <em>started</em>")
 
 
-def test_hyphenates_heading_id():
-	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
-	item = Item.markdown(
-		ContentPath.parse("guides/database"),
-		"## What's new, in 2.0?\n",
-	)
-
-	body = renderer.render(item)
-
-	assert_eq(body.headings[0].id, "what-s-new-in-2-0")
-
-
-def test_keeps_letters_in_heading_id():
-	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
-	item = Item.markdown(ContentPath.parse("writing/tranquility"), "## Café\n")
-
-	body = renderer.render(item)
-
-	assert_eq(body.headings[0].id, "café")
-
-
 def test_numbers_repeated_heading_ids():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(
@@ -155,12 +134,22 @@ def test_numbers_heading_ids_per_item():
 	assert_eq(body.headings[0].id, "setup")
 
 
-def test_rejects_heading_without_text_for_id():
+def test_gives_heading_without_letters_no_id():
 	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
 	item = Item.markdown(ContentPath.parse("guides/database"), "## ...\n")
 
-	with assert_raises(MarkdownError):
-		renderer.render(item)
+	body = renderer.render(item)
+
+	assert_is(body.headings[0].id, None)
+
+
+def test_leaves_headings_without_ids_unnumbered():
+	renderer = Renderer(Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)]))
+	item = Item.markdown(ContentPath.parse("guides/database"), "## ...\n\n## ...\n")
+
+	body = renderer.render(item)
+
+	assert_is(body.headings[1].id, None)
 
 
 def test_renders_image():

@@ -62,12 +62,12 @@ dev = [
 [[package]]
 name = "helios-url"
 version = "0.1"
-source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Furl&branch=main#05cd68e3ed0d1cdd27bb3686ba8523549110c06c" }
+source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Furl&branch=main#0d250b80f4da4e957b2d8f704c3b9efafeb69326" }
 
 [[package]]
 name = "helios-view"
 version = "0.1"
-source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fview&branch=main#05cd68e3ed0d1cdd27bb3686ba8523549110c06c" }
+source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fview&branch=main#0d250b80f4da4e957b2d8f704c3b9efafeb69326" }
 dependencies = [
     { name = "jinja2" },
     { name = "luna" },
@@ -89,7 +89,7 @@ wheels = [
 [[package]]
 name = "luna"
 version = "0.1.0"
-source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fluna&branch=main#05cd68e3ed0d1cdd27bb3686ba8523549110c06c" }
+source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fluna&branch=main#0d250b80f4da4e957b2d8f704c3b9efafeb69326" }
 
 [[package]]
 name = "marko"

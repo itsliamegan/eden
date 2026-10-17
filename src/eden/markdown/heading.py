@@ -6,6 +6,6 @@ class Heading(Component):
 	template = "components/markdown/heading"
 
 	level: int
-	id: str
+	id: str | None
 	text: str
 	content: Markup

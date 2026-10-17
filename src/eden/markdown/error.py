@@ -1,2 +1,0 @@
-class MarkdownError(ValueError):
-	pass

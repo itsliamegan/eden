@@ -18,3 +18,11 @@ def test_renders_heading():
 	)
 
 	assert_eq(html, '<h2 id="getting-started">Getting <em>started</em></h2>')
+
+
+def test_renders_heading_without_id():
+	engine = Engine(memory.Driver({}), fallbacks=[file.Driver(VIEWS_DIR)])
+
+	html = engine.render(Heading(level=2, id=None, text="...", content=Markup("...")))
+
+	assert_eq(html, "<h2>...</h2>")
