@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from .item import Item
 from .items import Items
+from .path import ContentPath
 
 
 @dataclass
@@ -13,7 +14,7 @@ class Collection:
 	sequence is no longer a directory and has no name or index item.
 	"""
 
-	name: str
+	name: ContentPath
 	items: Items
 	index: Item | None = None
 
