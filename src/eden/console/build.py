@@ -1,7 +1,9 @@
 from pathlib import Path
+import time
 
 from helios.assets import BundlerNotFoundError, CompileError, EntryNotFoundError
 from helios.view import ComponentError, TemplateError
+from luna import inflect
 from luna.cli import Command, argument
 
 from ..config import Config, ConfigError
@@ -42,6 +44,7 @@ class Build(Command):
 		except FileNotFoundError:
 			self.fail(f"invalid site config: file not found: {path}")
 
+		start = time.perf_counter()
 		try:
 			config = Config.parse(text)
 
@@ -54,9 +57,14 @@ class Build(Command):
 				sourcemap=False,
 			)
 			site = Site.read(config, manifest, driver)
-			driver.write(site.build())
+			documents = site.build()
+			driver.write(documents)
 			driver.copy()
 		except ConfigError as error:
 			self.fail(f"invalid site config: {error}")
 		except ANTICIPATED_ERRORS as error:
 			self.fail(str(error))
+
+		seconds = time.perf_counter() - start
+		pages = inflect.count(len(documents), "page")
+		self.logger.info(f"built {pages} in {seconds:.2f}s")

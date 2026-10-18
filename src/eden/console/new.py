@@ -21,3 +21,5 @@ class New(Command):
 			)
 		except FileExistsError:
 			self.fail(f"directory already exists: {self.directory}")
+
+		self.logger.info(f"created site in {self.directory}")

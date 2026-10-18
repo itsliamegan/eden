@@ -1,13 +1,16 @@
 from dataclasses import dataclass
 from pathlib import Path
-import sys
+import socket
 from threading import Thread
+import time
 
 from helios.url import URL
+from luna import inflect
 from luna.cli import Command, argument
+from luna.logger import Logger
 from watchfiles import Change, DefaultFilter, watch
 from werkzeug.exceptions import HTTPException, NotFound
-from werkzeug.serving import make_server
+from werkzeug.serving import WSGIRequestHandler, make_server
 from werkzeug.utils import send_from_directory
 from werkzeug.wrappers import Request, Response
 
@@ -28,18 +31,55 @@ class Serve(Command):
 	directory: Path = argument(default=Path("."), help="the site's root directory")
 
 	def run(self):
-		driver = file.Driver(self.directory)
-		application = Application(driver.public)
-		# Werkzeug reports a failure to bind and exits.
-		server = make_server(HOST, PORT, application, threaded=True)
+		# Try to bind to the address directly in order to support a custom error
+		# message instead of letting Werkzeug print its own.
+		try:
+			listener = socket.create_server((HOST, PORT))
+		except OSError as error:
+			self.fail(f"could not listen on port {PORT}: {error.strerror}")
+
+		try:
+			driver = file.Driver(self.directory)
+			application = Application(driver.public, self.logger)
+			server = make_server(
+				HOST,
+				PORT,
+				application,
+				threaded=True,
+				request_handler=RequestHandler,
+				fd=listener.fileno(),
+			)
+		finally:
+			# The Werkzeug server holds its own duplicate of the socket.
+			listener.close()
+
 		Thread(target=server.serve_forever, daemon=True).start()
 
 		try:
 			self.rebuild(driver, application)
-			for _ in watch(
+			# The base path is known only once the config parses.
+			address = URL(
+				application.base_path,
+				scheme=ADDRESS.scheme,
+				host=ADDRESS.host,
+				port=ADDRESS.port,
+			)
+			self.logger.info(f"serving at {address}")
+
+			directory = self.directory.resolve()
+			for changes in watch(
 				self.directory,
 				watch_filter=Filter(self.directory, driver),
 			):
+				for change, path in sorted(changes):
+					relative = Path(path).resolve().relative_to(directory)
+					match change:
+						case Change.added:
+							self.logger.info(f"added {relative}")
+						case Change.modified:
+							self.logger.info(f"changed {relative}")
+						case Change.deleted:
+							self.logger.info(f"deleted {relative}")
 				self.rebuild(driver, application)
 		except KeyboardInterrupt:
 			pass
@@ -52,12 +92,10 @@ class Serve(Command):
 		try:
 			text = path.read_text()
 		except FileNotFoundError:
-			print(
-				f"eden: error: invalid site config: file not found: {path}",
-				file=sys.stderr,
-			)
+			self.logger.error(f"invalid site config: file not found: {path}")
 			return
 
+		start = time.perf_counter()
 		try:
 			parsed = Config.parse(text)
 			base_url = URL(
@@ -83,12 +121,17 @@ class Serve(Command):
 				sourcemap=True,
 			)
 			site = Site.read(config, manifest, driver)
-			driver.write(site.build())
+			documents = site.build()
+			driver.write(documents)
 			driver.copy()
 		except ConfigError as error:
-			print(f"eden: error: invalid site config: {error}", file=sys.stderr)
+			self.logger.error(f"invalid site config: {error}")
 		except ANTICIPATED_ERRORS as error:
-			print(f"eden: error: {error}", file=sys.stderr)
+			self.logger.error(str(error))
+		else:
+			seconds = time.perf_counter() - start
+			pages = inflect.count(len(documents), "page")
+			self.logger.info(f"built {pages} in {seconds:.2f}s")
 
 
 @dataclass
@@ -101,12 +144,16 @@ class Application:
 	"""
 
 	public: Path
+	logger: Logger
 	base_path: str = ""
 
 	def __call__(self, environ, start_response):
 		request = Request(environ)
 		try:
 			response = self.respond(request)
+		except NotFound as error:
+			self.logger.warn(f"not found: {request.path}")
+			response = error
 		except HTTPException as error:
 			response = error
 		return response(environ, start_response)
@@ -130,6 +177,13 @@ class Application:
 					f"{path}.html",
 					request.environ,
 				)
+
+
+class RequestHandler(WSGIRequestHandler):
+	"""Handles a request without logging it, because the application reports the requests that fail."""
+
+	def log_request(self, code: int | str = "-", size: int | str = "-"):
+		pass
 
 
 class Filter(DefaultFilter):
