@@ -10,11 +10,7 @@ from .driver import Driver
 
 @dataclass
 class Site:
-	"""The model of a site, read from its driver.
-
-	Views reach content through item and collection, by the paths the site
-	config writes, so no member reserves a name in the content.
-	"""
+	"""The model of a site, read from its driver."""
 
 	config: Config
 	items: dict[ContentPath, Item]
