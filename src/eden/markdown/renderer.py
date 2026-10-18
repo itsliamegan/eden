@@ -20,9 +20,6 @@ from .heading import Heading
 from .image import Image
 from .link import Link
 
-# GFM's tables without the rest of GFM, which would also filter raw HTML.
-TABLES = MarkoExtension(elements=[gfm.Table, gfm.TableRow, gfm.TableCell])
-
 
 class Renderer:
 	"""A renderer for Markdown items that renders elements as components."""
@@ -30,7 +27,14 @@ class Renderer:
 	def __init__(self, engine: Engine, destinations: Destinations):
 		self.engine = engine
 		self.destinations = destinations
-		self.markdown = Markdown(extensions=["footnote", TABLES])
+		self.markdown = Markdown(
+			extensions=[
+				"footnote",
+				# GFM's tables without the rest of GFM, which would also filter
+				# raw HTML.
+				MarkoExtension(elements=[gfm.Table, gfm.TableRow, gfm.TableCell]),
+			]
+		)
 
 	def render(self, item: Item) -> Body:
 		document = self.markdown.parse(item.text)
