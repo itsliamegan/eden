@@ -2,12 +2,12 @@ import sys
 
 from luna.cli import Program
 
-from .console import New
+from .console import Build, New, Serve
 
 
 class Eden(Program):
 	name = "eden"
-	commands = (New,)
+	commands = (New, Build, Serve)
 
 
 def main():

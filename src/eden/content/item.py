@@ -34,13 +34,20 @@ class Item:
 			match = FRONT_MATTER.match(text)
 			if match is None:
 				raise ContentError(f"front matter not closed: {path}")
-			return cls(path, tomllib.loads(match[1]), text[match.end() :])
+			return cls(path, cls.load_fields(path, match[1]), text[match.end() :])
 		else:
 			return cls(path, {}, text)
 
 	@classmethod
 	def toml(cls, path: ContentPath, text: str) -> Self:
-		return cls(path, tomllib.loads(text), "")
+		return cls(path, cls.load_fields(path, text), "")
+
+	@staticmethod
+	def load_fields(path: ContentPath, text: str) -> dict[str, Any]:
+		try:
+			return tomllib.loads(text)
+		except tomllib.TOMLDecodeError as error:
+			raise ContentError(f"invalid TOML in {path}: {error}") from error
 
 	@property
 	def name(self) -> str:

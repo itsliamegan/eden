@@ -15,9 +15,10 @@ class Driver(Driver):
 
 	def __init__(self, root: Path):
 		self.root = root
-		self.content = Path(root, "src", "content")
-		self.assets = Path(root, "src", "assets")
-		self.static = Path(root, "src", "static")
+		self.source = Path(root, "src")
+		self.content = Path(self.source, "content")
+		self.assets = Path(self.source, "assets")
+		self.static = Path(self.source, "static")
 		self.public = Path(root, "public")
 
 	def items(self) -> list[Item]:
@@ -52,7 +53,7 @@ class Driver(Driver):
 		return collections
 
 	def views(self) -> file.Driver:
-		return file.Driver(Path(self.root, "src", "views"))
+		return file.Driver(Path(self.source, "views"))
 
 	def read(self, directory: Path) -> list[Item]:
 		"""Read a directory's items, ignoring hidden files, in name order."""

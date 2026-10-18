@@ -14,7 +14,7 @@ from eden.content import (
 from eden.document import Document
 from eden.driver import memory
 from eden.markdown import MarkdownError
-from eden.routing import Route
+from eden.routing import Route, RouteError
 from eden.routing.route import PerItemExpansion, SingleExpansion
 from eden.site import DuplicateDocumentError, Site, ViewNotFoundError
 
@@ -445,6 +445,53 @@ def test_raises_on_route_naming_missing_collection():
 			Manifest({}, {}),
 			memory.Driver(views={"articles/show": ""}),
 		)
+
+
+def test_raises_on_item_name_invalid_in_route():
+	route = Route(
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	config = Config(URL.parse("https://example.com"), [], [], [route], {})
+	driver = memory.Driver(
+		collections=[
+			Collection(
+				ContentPath.parse("articles"),
+				Items([Item(ContentPath.parse("articles/hello world"), {}, "")]),
+			),
+		],
+		views={"articles/show": ""},
+	)
+
+	with assert_raises(RouteError):
+		Site.read(config, Manifest({}, {}), driver)
+
+
+def test_raises_on_body_linking_to_item_name_invalid_in_route():
+	route = Route(
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	config = Config(URL.parse("https://example.com"), [], [], [route], {})
+	driver = memory.Driver(
+		items=[
+			Item.markdown(ContentPath.parse("about"), "[Hi](<articles/hello world.md>)")
+		],
+		collections=[
+			Collection(
+				ContentPath.parse("articles"),
+				Items([Item(ContentPath.parse("articles/hello world"), {}, "")]),
+			),
+		],
+		views={"articles/show": ""},
+	)
+
+	with assert_raises(RouteError):
+		Site.read(config, Manifest({}, {}), driver)
 
 
 def test_raises_on_two_documents_at_one_path():
