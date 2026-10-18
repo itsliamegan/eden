@@ -6,7 +6,6 @@ from luna import inflect
 from marko import HTMLRenderer, Markdown, block, inline
 from marko.ext import footnote
 from marko.ext.gfm import elements as gfm
-from marko.ext.gfm.renderer import GFMRendererMixin
 from marko.helpers import MarkoExtension
 from markupsafe import Markup
 
@@ -30,8 +29,7 @@ class Renderer:
 		self.markdown = Markdown(
 			extensions=[
 				"footnote",
-				# GFM's tables without the rest of GFM, which would also filter
-				# raw HTML.
+				# GFM's table elements without the rest of GFM.
 				MarkoExtension(elements=[gfm.Table, gfm.TableRow, gfm.TableCell]),
 			]
 		)
@@ -45,10 +43,6 @@ class Renderer:
 
 class ElementRenderer(HTMLRenderer):
 	"""A renderer for one item's parsed Markdown that holds what it collects while rendering."""
-
-	render_table = GFMRendererMixin.render_table
-	render_table_row = GFMRendererMixin.render_table_row
-	render_table_cell = GFMRendererMixin.render_table_cell
 
 	def __init__(self, engine: Engine, destinations: Destinations, item: Item):
 		super().__init__()
@@ -93,6 +87,27 @@ class ElementRenderer(HTMLRenderer):
 		)
 		self.headings.append(heading)
 		return self.engine.render(heading) + "\n"
+
+	def render_table(self, element: gfm.Table) -> str:
+		head, *rows = element.children
+		html = f"<table>\n<thead>\n{self.render(head)}</thead>\n"
+		if rows:
+			html += f"<tbody>\n{"".join(self.render(row) for row in rows)}</tbody>\n"
+		return html + "</table>\n"
+
+	def render_table_row(self, element: gfm.TableRow) -> str:
+		return f"<tr>\n{self.render_children(element)}</tr>\n"
+
+	def render_table_cell(self, element: gfm.TableCell) -> str:
+		if element.header:
+			tag = "th"
+		else:
+			tag = "td"
+		content = self.render_children(element)
+		if element.align is None:
+			return f"<{tag}>{content}</{tag}>\n"
+		else:
+			return f'<{tag} align="{element.align}">{content}</{tag}>\n'
 
 	def render_footnote_def(self, element: footnote.FootnoteDef) -> str:
 		return ""

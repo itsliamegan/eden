@@ -57,7 +57,22 @@ def test_renders_table():
 		"</tr>\n</thead>\n<tbody>\n<tr>\n"
 		'<td align="left"><code>eden build</code></td>\n'
 		'<td align="right">Writes <em>public</em></td>\n'
-		"</tr>\n</tbody></table>",
+		"</tr>\n</tbody>\n</table>\n",
+	)
+
+
+def test_renders_table_without_rows():
+	renderer = Renderer(
+		Engine(memory.Driver({})),
+		Destinations(URLs([], URL.parse("https://example.com")), {}),
+	)
+	item = Item.markdown(ContentPath.parse("articles/intro"), "| Command |\n| - |\n")
+
+	body = renderer.render(item)
+
+	assert_eq(
+		body.html,
+		"<table>\n<thead>\n<tr>\n<th>Command</th>\n</tr>\n</thead>\n</table>\n",
 	)
 
 
