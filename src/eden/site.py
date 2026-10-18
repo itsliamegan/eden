@@ -87,6 +87,12 @@ class Site:
 		return cls(config, items, collections, pages, engine)
 
 	def build(self) -> list[Document]:
+		paths = set()
+		for page in self.pages:
+			if page.path in paths:
+				raise DocumentError(f"duplicate document path: {page.path}")
+			paths.add(page.path)
+
 		documents = []
 		for page in self.pages:
 			text = self.engine.render(
@@ -110,4 +116,8 @@ class Site:
 
 
 class ViewNotFoundError(LookupError):
+	pass
+
+
+class DocumentError(ValueError):
 	pass

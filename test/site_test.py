@@ -16,7 +16,7 @@ from eden.driver import memory
 from eden.markdown import MarkdownError
 from eden.routing import Route
 from eden.routing.route import PerItemExpansion, SingleExpansion
-from eden.site import Site, ViewNotFoundError
+from eden.site import DocumentError, Site, ViewNotFoundError
 
 
 def test_finds_top_level_item():
@@ -445,3 +445,16 @@ def test_raises_on_route_naming_missing_collection():
 			Manifest({}, {}),
 			memory.Driver(views={"articles/show": ""}),
 		)
+
+
+def test_raises_on_two_documents_at_one_path():
+	home = Route("home", Pattern.parse("/"), "home", SingleExpansion(None))
+	welcome = Route("welcome", Pattern.parse("/"), "home", SingleExpansion(None))
+	site = Site.read(
+		Config(URL.parse("https://example.com"), [], [], [home, welcome], {}),
+		Manifest({}, {}),
+		memory.Driver(views={"home": "Welcome"}),
+	)
+
+	with assert_raises(DocumentError):
+		site.build()
