@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 from luna.test.assertion import assert_eq, assert_raises
 
 from eden.__main__ import Eden
-from eden.commands import New
+from eden.console import New
 
 
 def test_writes_skeleton_tree():
