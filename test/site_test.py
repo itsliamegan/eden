@@ -16,7 +16,7 @@ from eden.driver import memory
 from eden.markdown import MarkdownError
 from eden.routing import Route
 from eden.routing.route import PerItemExpansion, SingleExpansion
-from eden.site import Site
+from eden.site import Site, ViewNotFoundError
 
 
 def test_finds_top_level_item():
@@ -208,6 +208,7 @@ def test_links_items_by_their_pages():
 			collections=[
 				Collection(ContentPath.parse("articles"), Items([intro, outro])),
 			],
+			views={"articles/show": ""},
 		),
 	)
 
@@ -406,3 +407,41 @@ def test_gives_view_assets_under_base_url():
 			),
 		],
 	)
+
+
+def test_raises_on_route_naming_missing_view():
+	route = Route(None, Pattern.parse("/"), "home", SingleExpansion(None))
+	config = Config(URL.parse("https://example.com"), [], [], [route], {})
+
+	with assert_raises(ViewNotFoundError):
+		Site.read(config, Manifest({}, {}), memory.Driver())
+
+
+def test_raises_on_route_naming_missing_item():
+	route = Route(
+		"about",
+		Pattern.parse("/about"),
+		"page",
+		SingleExpansion(ContentPath.parse("about")),
+	)
+	config = Config(URL.parse("https://example.com"), [], [], [route], {})
+
+	with assert_raises(ContentNotFoundError):
+		Site.read(config, Manifest({}, {}), memory.Driver(views={"page": ""}))
+
+
+def test_raises_on_route_naming_missing_collection():
+	route = Route(
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	config = Config(URL.parse("https://example.com"), [], [], [route], {})
+
+	with assert_raises(ContentNotFoundError):
+		Site.read(
+			config,
+			Manifest({}, {}),
+			memory.Driver(views={"articles/show": ""}),
+		)

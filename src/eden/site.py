@@ -48,10 +48,11 @@ class Site:
 			if collection.index is not None:
 				items[collection.index.path] = collection.index
 
+		views = driver.views()
 		urls = URLs(config.routes, config.base_url)
 		assets = Assets(manifest, urls.path("/assets/").path)
 		engine = Engine(
-			driver.views(),
+			views,
 			helpers=Helpers(globals={"urls": urls, "assets": assets}),
 			fallbacks=[file.Driver(VIEWS_DIR)],
 		)
@@ -60,15 +61,25 @@ class Site:
 		for item in items.values():
 			item.body, item.headings = renderer.render(item)
 
+		names = views.names()
 		pages = []
 		for route in config.routes:
+			if route.view not in names:
+				raise ViewNotFoundError(f"view not found: {route.view}")
+
 			match route.expansion:
 				case SingleExpansion(item=None):
 					pages.append(Page(route.path.path(), route, None))
 				case SingleExpansion(item=ContentPath() as path):
-					pages.append(Page(route.path.path(), route, items[path]))
+					item = items.get(path)
+					if item is None:
+						raise ContentNotFoundError(f"item not found: {path}")
+					pages.append(Page(route.path.path(), route, item))
 				case PerItemExpansion(collection=path):
-					for item in collections[path]:
+					collection = collections.get(path)
+					if collection is None:
+						raise ContentNotFoundError(f"collection not found: {path}")
+					for item in collection:
 						pages.append(
 							Page(route.path.path({"name": item.name}), route, item)
 						)
@@ -96,3 +107,7 @@ class Site:
 		if collection is None:
 			raise ContentNotFoundError(f"collection not found: {path}")
 		return collection
+
+
+class ViewNotFoundError(LookupError):
+	pass
