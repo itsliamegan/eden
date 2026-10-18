@@ -65,7 +65,7 @@ requires-dist = [
     { name = "helios-assets", git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fassets&branch=main" },
     { name = "helios-url", git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Furl&branch=main" },
     { name = "helios-view", git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fview&branch=main" },
-    { name = "luna", git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fluna&branch=main" },
+    { name = "luna", git = "https://github.com/itsliamegan/luna?branch=main" },
     { name = "marko", specifier = ">=2.2.4" },
     { name = "markupsafe", specifier = ">=3.0.4" },
     { name = "watchfiles", specifier = ">=1.3.0" },
@@ -81,7 +81,7 @@ dev = [
 [[package]]
 name = "helios-assets"
 version = "0.1"
-source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fassets&branch=main#722040cce87361937c703fe247724655595ee411" }
+source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fassets&branch=main#8933f14c722aa775389d27e39ef8728149d8b544" }
 dependencies = [
     { name = "markupsafe" },
 ]
@@ -89,12 +89,12 @@ dependencies = [
 [[package]]
 name = "helios-url"
 version = "0.1"
-source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Furl&branch=main#722040cce87361937c703fe247724655595ee411" }
+source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Furl&branch=main#8933f14c722aa775389d27e39ef8728149d8b544" }
 
 [[package]]
 name = "helios-view"
 version = "0.1"
-source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fview&branch=main#722040cce87361937c703fe247724655595ee411" }
+source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fview&branch=main#8933f14c722aa775389d27e39ef8728149d8b544" }
 dependencies = [
     { name = "jinja2" },
     { name = "luna" },
@@ -125,7 +125,7 @@ wheels = [
 [[package]]
 name = "luna"
 version = "0.1.0"
-source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fluna&branch=main#722040cce87361937c703fe247724655595ee411" }
+source = { git = "https://github.com/itsliamegan/luna?branch=main#1d2ee20ff1546ace26eae6d231c06927f57e423e" }
 
 [[package]]
 name = "marko"
