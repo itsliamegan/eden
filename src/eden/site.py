@@ -9,7 +9,7 @@ from .content import Collection, ContentNotFoundError, ContentPath, Item
 from .document import Document
 from .driver import Driver
 from .markdown import Destinations, Renderer, VIEWS_DIR
-from .routing import Page, URLs
+from .routing import Page, RouteError, URLs
 from .routing.route import PerItemExpansion, SingleExpansion
 
 
@@ -48,18 +48,8 @@ class Site:
 				items[collection.index.path] = collection.index
 
 		views = driver.views()
-		urls = URLs(config.routes, config.base_url)
-		assets = Assets(manifest, urls.path("/assets/").path)
-		engine = Engine(
-			views,
-			helpers=Helpers(globals={"urls": urls, "assets": assets}),
-			fallbacks=[file.Driver(VIEWS_DIR)],
-		)
-
-		renderer = Renderer(engine, Destinations(urls, items))
-		for item in items.values():
-			item.body, item.headings = renderer.render(item)
-
+		# Expand the routes first because a link in a body asks for an item's URL,
+		# which fails on a name its route rejects.
 		names = views.names()
 		pages = []
 		for route in config.routes:
@@ -79,9 +69,25 @@ class Site:
 					if collection is None:
 						raise ContentNotFoundError(f"collection not found: {path}")
 					for item in collection:
-						pages.append(
-							Page(route.path.path({"name": item.name}), route, item)
-						)
+						try:
+							path = route.path.path({"name": item.name})
+						except ValueError as error:
+							raise RouteError(
+								f"invalid item name for route: {item.path}"
+							) from error
+						pages.append(Page(path, route, item))
+
+		urls = URLs(config.routes, config.base_url)
+		assets = Assets(manifest, urls.path("/assets/").path)
+		engine = Engine(
+			views,
+			helpers=Helpers(globals={"urls": urls, "assets": assets}),
+			fallbacks=[file.Driver(VIEWS_DIR)],
+		)
+
+		renderer = Renderer(engine, Destinations(urls, items))
+		for item in items.values():
+			item.body, item.headings = renderer.render(item)
 
 		return cls(engine, items, collections, pages)
 

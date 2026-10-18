@@ -52,6 +52,11 @@ def test_rejects_unclosed_front_matter():
 		Item.markdown(ContentPath.parse("about"), '+++\ntitle = "About"\n')
 
 
+def test_rejects_invalid_front_matter():
+	with assert_raises(ContentError):
+		Item.markdown(ContentPath.parse("about"), "+++\ntitle =\n+++\nFirst\n")
+
+
 def test_reads_toml_fields():
 	item = Item.toml(ContentPath.parse("info"), 'title = "Liam Egan"\n')
 
@@ -69,6 +74,11 @@ def test_gives_field():
 	item = Item.toml(ContentPath.parse("about"), 'title = "About"\n')
 
 	assert_eq(item.field("title"), "About")
+
+
+def test_rejects_invalid_toml():
+	with assert_raises(ContentError):
+		Item.toml(ContentPath.parse("info"), "title =")
 
 
 def test_gives_nothing_for_unset_field():
