@@ -1,0 +1,2 @@
+class DuplicateFileError(FileExistsError):
+	pass
