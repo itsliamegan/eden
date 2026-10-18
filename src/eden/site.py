@@ -2,13 +2,15 @@ from dataclasses import dataclass
 from typing import Self
 
 from helios.assets import Assets, Manifest
-from helios.view import Engine, Helpers, file
+from helios.view import Engine, Helpers, View, file
 
 from .config import Config
 from .content import Collection, ContentNotFoundError, ContentPath, Item
+from .document import Document
 from .driver import Driver
 from .markdown import Destinations, Renderer, VIEWS_DIR
-from .routing import URLs
+from .routing import Page, URLs
+from .routing.route import PerItemExpansion, SingleExpansion
 
 
 @dataclass
@@ -18,6 +20,8 @@ class Site:
 	config: Config
 	items: dict[ContentPath, Item]
 	collections: dict[ContentPath, Collection]
+	pages: list[Page]
+	engine: Engine
 
 	@classmethod
 	def read(cls, config: Config, manifest: Manifest, driver: Driver) -> Self:
@@ -56,7 +60,30 @@ class Site:
 		for item in items.values():
 			item.body, item.headings = renderer.render(item)
 
-		return cls(config, items, collections)
+		pages = []
+		for route in config.routes:
+			match route.expansion:
+				case SingleExpansion(item=None):
+					pages.append(Page(route.path.path(), route, None))
+				case SingleExpansion(item=ContentPath() as path):
+					pages.append(Page(route.path.path(), route, items[path]))
+				case PerItemExpansion(collection=path):
+					for item in collections[path]:
+						pages.append(
+							Page(route.path.path({"name": item.name}), route, item)
+						)
+
+		return cls(config, items, collections, pages, engine)
+
+	def build(self) -> list[Document]:
+		documents = []
+		for page in self.pages:
+			text = self.engine.render(
+				View(page.route.view),
+				{"item": page.item, "page": page, "site": self},
+			)
+			documents.append(Document(page.path, text))
+		return documents
 
 	def item(self, path: str) -> Item:
 		item = self.items.get(ContentPath.parse(path))

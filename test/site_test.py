@@ -11,10 +11,11 @@ from eden.content import (
 	Items,
 	Order,
 )
+from eden.document import Document
 from eden.driver import memory
 from eden.markdown import MarkdownError
 from eden.routing import Route
-from eden.routing.route import PerItemExpansion
+from eden.routing.route import PerItemExpansion, SingleExpansion
 from eden.site import Site
 
 
@@ -240,3 +241,168 @@ def test_raises_on_body_linking_to_missing_item():
 
 	with assert_raises(MarkdownError):
 		Site.read(config, Manifest({}, {}), driver)
+
+
+def test_builds_page_without_item():
+	route = Route(None, Pattern.parse("/"), "home", SingleExpansion(None))
+	site = Site.read(
+		Config(URL.parse("https://example.com"), [], [], [route], {}),
+		Manifest({}, {}),
+		memory.Driver(views={"home": "Welcome"}),
+	)
+
+	assert_eq(site.build(), [Document("/", "Welcome")])
+
+
+def test_builds_page_for_single_item():
+	about = Item(ContentPath.parse("about"), {"title": "About"}, "")
+	route = Route(
+		"about",
+		Pattern.parse("/about"),
+		"page",
+		SingleExpansion(ContentPath.parse("about")),
+	)
+	site = Site.read(
+		Config(URL.parse("https://example.com"), [], [], [route], {}),
+		Manifest({}, {}),
+		memory.Driver(
+			items=[about],
+			views={"page": '{{ item.field("title") }}'},
+		),
+	)
+
+	assert_eq(site.build(), [Document("/about", "About")])
+
+
+def test_builds_page_for_index_item():
+	index = Item(ContentPath.parse("articles"), {"title": "Articles"}, "")
+	route = Route(
+		"articles",
+		Pattern.parse("/articles/"),
+		"page",
+		SingleExpansion(ContentPath.parse("articles")),
+	)
+	site = Site.read(
+		Config(URL.parse("https://example.com"), [], [], [route], {}),
+		Manifest({}, {}),
+		memory.Driver(
+			collections=[Collection(ContentPath.parse("articles"), Items([]), index)],
+			views={"page": '{{ item.field("title") }}'},
+		),
+	)
+
+	assert_eq(site.build(), [Document("/articles/", "Articles")])
+
+
+def test_builds_page_for_each_collection_item():
+	intro = Item(ContentPath.parse("articles/intro"), {}, "")
+	outro = Item(ContentPath.parse("articles/outro"), {}, "")
+	route = Route(
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	site = Site.read(
+		Config(URL.parse("https://example.com"), [], [], [route], {}),
+		Manifest({}, {}),
+		memory.Driver(
+			collections=[
+				Collection(ContentPath.parse("articles"), Items([intro, outro])),
+			],
+			views={"articles/show": "{{ item.name }}"},
+		),
+	)
+
+	assert_eq(
+		site.build(),
+		[
+			Document("/articles/intro", "intro"),
+			Document("/articles/outro", "outro"),
+		],
+	)
+
+
+def test_gives_view_item_body():
+	about = Item.markdown(ContentPath.parse("about"), "Read *this* first.\n")
+	route = Route(
+		"about",
+		Pattern.parse("/about"),
+		"page",
+		SingleExpansion(ContentPath.parse("about")),
+	)
+	site = Site.read(
+		Config(URL.parse("https://example.com"), [], [], [route], {}),
+		Manifest({}, {}),
+		memory.Driver(items=[about], views={"page": "{{ item.body }}"}),
+	)
+
+	assert_eq(
+		site.build(),
+		[Document("/about", "<p>Read <em>this</em> first.</p>\n")],
+	)
+
+
+def test_gives_view_its_page():
+	route = Route("home", Pattern.parse("/"), "home", SingleExpansion(None))
+	site = Site.read(
+		Config(URL.parse("https://example.com"), [], [], [route], {}),
+		Manifest({}, {}),
+		memory.Driver(views={"home": "{{ page.path }} {{ page.route.name }}"}),
+	)
+
+	assert_eq(site.build(), [Document("/", "/ home")])
+
+
+def test_gives_view_its_site():
+	intro = Item(ContentPath.parse("articles/intro"), {}, "")
+	outro = Item(ContentPath.parse("articles/outro"), {}, "")
+	route = Route(None, Pattern.parse("/"), "home", SingleExpansion(None))
+	site = Site.read(
+		Config(URL.parse("https://example.com"), [], [], [route], {}),
+		Manifest({}, {}),
+		memory.Driver(
+			collections=[
+				Collection(ContentPath.parse("articles"), Items([intro, outro])),
+			],
+			views={
+				"home": (
+					'{% for article in site.collection("articles") %}'
+					"{{ article.name }} "
+					"{% endfor %}"
+				),
+			},
+		),
+	)
+
+	assert_eq(site.build(), [Document("/", "intro outro ")])
+
+
+def test_gives_view_urls_under_base_url():
+	route = Route("home", Pattern.parse("/"), "home", SingleExpansion(None))
+	site = Site.read(
+		Config(URL.parse("https://example.com/mesa"), [], [], [route], {}),
+		Manifest({}, {}),
+		memory.Driver(views={"home": '{{ urls.route("home") }}'}),
+	)
+
+	assert_eq(site.build(), [Document("/", "/mesa/")])
+
+
+def test_gives_view_assets_under_base_url():
+	route = Route(None, Pattern.parse("/"), "home", SingleExpansion(None))
+	site = Site.read(
+		Config(URL.parse("https://example.com/mesa"), [], ["main"], [route], {}),
+		Manifest({}, {"main": "styles/main-P7XW3R5T.css"}),
+		memory.Driver(views={"home": '{{ assets.style("main") }}'}),
+	)
+
+	assert_eq(
+		site.build(),
+		[
+			Document(
+				"/",
+				'<link rel="stylesheet" href="/mesa/assets/styles/main-P7XW3R5T.css">',
+			),
+		],
+	)
