@@ -18,8 +18,8 @@ FRONT_MATTER = re.compile(r"\+\+\+\n(.*?)^\+\+\+$\n?", re.DOTALL | re.MULTILINE)
 class Item:
 	"""A file in a site's content.
 
-	An Item's name is its path's last segment. Two items are equal if their
-	paths are equal. Its body and headings are rendered by its site.
+	An Item's name is its path's last segment. An item's body and headings are
+	set when its site reads it. Two items are equal if their paths are equal.
 	"""
 
 	path: ContentPath
