@@ -1,0 +1,7 @@
+[assets]
+scripts = ["main"]
+styles = ["main"]
+
+[[routes]]
+path = "/"
+view = "home"
