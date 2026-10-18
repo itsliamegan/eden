@@ -56,7 +56,7 @@ class Driver(Driver):
 		return file.Driver(Path(self.source, "views"))
 
 	def read(self, directory: Path) -> list[Item]:
-		"""Read the items of a directory's files, ignoring hidden files, in name order."""
+		"""Read a directory's items, ignoring hidden files, in name order."""
 		sources = []
 		for source in directory.iterdir():
 			if source.is_file() and not source.name.startswith("."):
