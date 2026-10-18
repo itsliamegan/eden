@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from .body import Body
 from .code import Code
 from .destinations import Destinations
 from .error import MarkdownError
@@ -15,7 +14,6 @@ VIEWS_DIR = Path(Path(__file__).parent, "views")
 
 __all__ = [
 	"VIEWS_DIR",
-	"Body",
 	"Code",
 	"Destinations",
 	"Footnote",

@@ -10,7 +10,6 @@ from marko.helpers import MarkoExtension
 from markupsafe import Markup
 
 from ..content import Item
-from .body import Body
 from .code import Code
 from .destinations import Destinations
 from .footnote import Footnote
@@ -34,11 +33,11 @@ class Renderer:
 			]
 		)
 
-	def render(self, item: Item) -> Body:
+	def render(self, item: Item) -> tuple[Markup, list[Heading]]:
 		document = self.markdown.parse(item.text)
 		with ElementRenderer(self.engine, self.destinations, item) as renderer:
 			text = renderer.render(document)
-		return Body(Markup(text), renderer.headings)
+		return Markup(text), renderer.headings
 
 
 class ElementRenderer(HTMLRenderer):
