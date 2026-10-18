@@ -3,7 +3,7 @@ from tempfile import TemporaryDirectory
 
 from luna.test.assertion import assert_eq
 
-from eden.commands import Build, New
+from eden.console import Build, New
 
 ROOT = Path(__file__).parent.parent.parent
 

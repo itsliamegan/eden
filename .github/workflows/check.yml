@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 26
 
-      - name: "Install"
+      - name: "Install dependencies"
         run: |
           uv sync --locked
           npm ci

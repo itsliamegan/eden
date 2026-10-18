@@ -2,7 +2,7 @@ import sys
 
 from luna.cli import Program
 
-from .commands import Build, New, Serve
+from .console import Build, New, Serve
 
 
 class Eden(Program):

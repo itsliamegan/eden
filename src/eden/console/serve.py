@@ -25,7 +25,7 @@ class Serve(Command):
 	"""Serve a site for local work, rebuilding it when its source changes."""
 
 	name = "serve"
-	directory: Path = argument(default=Path("."), help="the site's directory")
+	directory: Path = argument(default=Path("."), help="the site's root directory")
 
 	def run(self):
 		driver = file.Driver(self.directory)

@@ -34,7 +34,7 @@ class Build(Command):
 	"""Build a site for a deploy."""
 
 	name = "build"
-	directory: Path = argument(default=Path("."), help="the site's directory")
+	directory: Path = argument(default=Path("."), help="the site's root directory")
 
 	def run(self):
 		path = Path(self.directory, "site.toml")

@@ -48,8 +48,8 @@ class Site:
 				items[collection.index.path] = collection.index
 
 		views = driver.views()
-		# Expand the routes first because a link in a body asks for an item's URL,
-		# which fails on a name its route rejects.
+		# Expand the routes before rendering any body, so an item whose name its
+		# route rejects fails here rather than in a link to that item.
 		names = views.names()
 		pages = []
 		for route in config.routes:
