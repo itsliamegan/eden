@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
 	"cattrs>=26.2.1",
+	"helios-assets",
 	"helios-url",
 	"helios-view",
 	"luna",
@@ -22,6 +23,7 @@ requires = ["uv_build"]
 build-backend = "uv_build"
 
 [tool.uv.sources]
+helios-assets = { git = "https://github.com/itsliamegan/helios", subdirectory = "packages/assets", branch = "main" }
 helios-url = { git = "https://github.com/itsliamegan/helios", subdirectory = "packages/url", branch = "main" }
 helios-view = { git = "https://github.com/itsliamegan/helios", subdirectory = "packages/view", branch = "main" }
 luna = { git = "https://github.com/itsliamegan/helios", subdirectory = "packages/luna", branch = "main" }

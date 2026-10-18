@@ -30,6 +30,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "cattrs" },
+    { name = "helios-assets" },
     { name = "helios-url" },
     { name = "helios-view" },
     { name = "luna" },
@@ -46,6 +47,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "cattrs", specifier = ">=26.2.1" },
+    { name = "helios-assets", git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fassets&branch=main" },
     { name = "helios-url", git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Furl&branch=main" },
     { name = "helios-view", git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fview&branch=main" },
     { name = "luna", git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fluna&branch=main" },
@@ -57,6 +59,14 @@ requires-dist = [
 dev = [
     { name = "ruff", specifier = ">=0.16.10" },
     { name = "ty", specifier = ">=0.0.84" },
+]
+
+[[package]]
+name = "helios-assets"
+version = "0.1"
+source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fassets&branch=main#0d250b80f4da4e957b2d8f704c3b9efafeb69326" }
+dependencies = [
+    { name = "markupsafe" },
 ]
 
 [[package]]
