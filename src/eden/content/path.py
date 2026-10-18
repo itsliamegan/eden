@@ -34,6 +34,25 @@ class ContentPath:
 		else:
 			return ContentPath(self.segments[:-1])
 
+	def resolve(self, reference: str) -> ContentPath:
+		"""Resolve a relative reference against this path's parent.
+
+		A reference resolves as a link in a file resolves against the file's
+		directory, so "outro" from "articles/intro" is "articles/outro".
+		"""
+		segments = list(self.segments[:-1])
+		for segment in reference.split("/"):
+			if segment == "..":
+				if not segments:
+					raise ContentError(
+						f"reference leaves content: {reference} from {self}"
+					)
+				segments.pop()
+			elif segment != ".":
+				segments.append(segment)
+
+		return ContentPath.parse("/".join(segments))
+
 	def __str__(self) -> str:
 		return "/".join(self.segments)
 

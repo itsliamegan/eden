@@ -5,7 +5,10 @@ requires-python = ">=3.14"
 dependencies = [
 	"cattrs>=26.2.1",
 	"helios-url",
+	"helios-view",
 	"luna",
+	"marko>=2.2.4",
+	"markupsafe>=3.0.4",
 ]
 
 [dependency-groups]
@@ -20,7 +23,8 @@ build-backend = "uv_build"
 
 [tool.uv.sources]
 helios-url = { git = "https://github.com/itsliamegan/helios", subdirectory = "packages/url", branch = "main" }
-luna = { git = "https://github.com/itsliamegan/luna", branch = "main" }
+helios-view = { git = "https://github.com/itsliamegan/helios", subdirectory = "packages/view", branch = "main" }
+luna = { git = "https://github.com/itsliamegan/helios", subdirectory = "packages/luna", branch = "main" }
 
 [tool.ruff]
 target-version = "py314"

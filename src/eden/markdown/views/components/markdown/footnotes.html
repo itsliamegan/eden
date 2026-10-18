@@ -1,0 +1,10 @@
+<section class="footnotes">
+<ol>
+{%- for note in notes %}
+<li id="fn-{{ note.id }}">
+{{ note.content }}
+<a href="#fnref-{{ note.id }}">↩</a>
+</li>
+{%- endfor %}
+</ol>
+</section>

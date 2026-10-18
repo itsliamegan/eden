@@ -60,9 +60,9 @@ def test_reads_toml_fields():
 
 
 def test_names_item_by_last_segment():
-	item = Item.toml(ContentPath.parse("writing/tranquility"), "")
+	item = Item.toml(ContentPath.parse("articles/intro"), "")
 
-	assert_eq(item.name, "tranquility")
+	assert_eq(item.name, "intro")
 
 
 def test_gives_field():
@@ -78,14 +78,14 @@ def test_gives_nothing_for_unset_field():
 
 
 def test_equals_item_at_same_path():
-	first = Item.toml(ContentPath.parse("writing/tranquility"), "title = 1")
-	second = Item.toml(ContentPath.parse("writing/tranquility"), "title = 2")
+	first = Item.toml(ContentPath.parse("articles/intro"), "title = 1")
+	second = Item.toml(ContentPath.parse("articles/intro"), "title = 2")
 
 	assert_eq(first, second)
 
 
 def test_differs_from_item_at_other_path():
-	first = Item.toml(ContentPath.parse("writing/tranquility"), "")
-	second = Item.toml(ContentPath.parse("writing/serenity"), "")
+	first = Item.toml(ContentPath.parse("articles/intro"), "")
+	second = Item.toml(ContentPath.parse("articles/outro"), "")
 
 	assert_not_eq(first, second)

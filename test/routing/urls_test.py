@@ -13,16 +13,16 @@ from eden.routing.route import PerItemExpansion, SingleExpansion
 
 def test_builds_per_item_route_url():
 	route = Route(
-		"essay",
-		Pattern.parse("/writing/{name}"),
-		"writing/show",
-		PerItemExpansion(ContentPath.parse("writing")),
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
 	)
 	urls = URLs([route], URL.parse("https://example.com"))
 
-	url = urls.route("essay", Item(ContentPath.parse("writing/tranquility"), {}, ""))
+	url = urls.route("article", Item(ContentPath.parse("articles/intro"), {}, ""))
 
-	assert_eq(str(url), "/writing/tranquility")
+	assert_eq(str(url), "/articles/intro")
 
 
 def test_builds_single_path_url():
@@ -41,32 +41,32 @@ def test_builds_single_path_url():
 
 def test_builds_absolute_route_url():
 	route = Route(
-		"essay",
-		Pattern.parse("/writing/{name}"),
-		"writing/show",
-		PerItemExpansion(ContentPath.parse("writing")),
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
 	)
 	urls = URLs([route], URL.parse("https://example.com:8443"))
 
 	url = urls.route(
-		"essay", Item(ContentPath.parse("writing/tranquility"), {}, ""), absolute=True
+		"article", Item(ContentPath.parse("articles/intro"), {}, ""), absolute=True
 	)
 
-	assert_eq(str(url), "https://example.com:8443/writing/tranquility")
+	assert_eq(str(url), "https://example.com:8443/articles/intro")
 
 
 def test_prefixes_route_url_with_base_url_path():
 	route = Route(
-		"essay",
-		Pattern.parse("/writing/{name}"),
-		"writing/show",
-		PerItemExpansion(ContentPath.parse("writing")),
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
 	)
 	urls = URLs([route], URL.parse("https://example.com/mesa"))
 
-	url = urls.route("essay", Item(ContentPath.parse("writing/tranquility"), {}, ""))
+	url = urls.route("article", Item(ContentPath.parse("articles/intro"), {}, ""))
 
-	assert_eq(str(url), "/mesa/writing/tranquility")
+	assert_eq(str(url), "/mesa/articles/intro")
 
 
 def test_keeps_trailing_slash_of_root_under_base_url_path():
@@ -129,28 +129,124 @@ def test_rejects_item_for_single_path():
 
 def test_rejects_per_item_route_without_item():
 	route = Route(
-		"essay",
-		Pattern.parse("/writing/{name}"),
-		"writing/show",
-		PerItemExpansion(ContentPath.parse("writing")),
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
 	)
 	urls = URLs([route], URL.parse("https://example.com"))
 
 	with assert_raises(RouteError):
-		urls.route("essay")
+		urls.route("article")
 
 
 def test_rejects_item_from_other_collection():
 	route = Route(
-		"essay",
-		Pattern.parse("/writing/{name}"),
-		"writing/show",
-		PerItemExpansion(ContentPath.parse("writing")),
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
 	)
 	urls = URLs([route], URL.parse("https://example.com"))
 
 	with assert_raises(RouteError):
-		urls.route("essay", Item(ContentPath.parse("links/tranquility"), {}, ""))
+		urls.route("article", Item(ContentPath.parse("links/intro"), {}, ""))
+
+
+def test_builds_item_url_from_per_item_route():
+	route = Route(
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	urls = URLs([route], URL.parse("https://example.com"))
+
+	url = urls.item(Item(ContentPath.parse("articles/intro"), {}, ""))
+
+	assert_eq(str(url), "/articles/intro")
+
+
+def test_builds_item_url_from_single_route():
+	route = Route(
+		"about",
+		Pattern.parse("/about"),
+		"page",
+		SingleExpansion(ContentPath.parse("about")),
+	)
+	urls = URLs([route], URL.parse("https://example.com"))
+
+	url = urls.item(Item(ContentPath.parse("about"), {}, ""))
+
+	assert_eq(str(url), "/about")
+
+
+def test_builds_item_url_from_unnamed_route():
+	route = Route(
+		None,
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	urls = URLs([route], URL.parse("https://example.com"))
+
+	url = urls.item(Item(ContentPath.parse("articles/intro"), {}, ""))
+
+	assert_eq(str(url), "/articles/intro")
+
+
+def test_prefixes_item_url_with_base_url_path():
+	route = Route(
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	urls = URLs([route], URL.parse("https://example.com/mesa"))
+
+	url = urls.item(Item(ContentPath.parse("articles/intro"), {}, ""))
+
+	assert_eq(str(url), "/mesa/articles/intro")
+
+
+def test_builds_absolute_item_url():
+	route = Route(
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	urls = URLs([route], URL.parse("https://example.com:8443"))
+
+	url = urls.item(Item(ContentPath.parse("articles/intro"), {}, ""), absolute=True)
+
+	assert_eq(str(url), "https://example.com:8443/articles/intro")
+
+
+def test_rejects_item_no_route_renders():
+	route = Route(
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	urls = URLs([route], URL.parse("https://example.com"))
+
+	with assert_raises(RouteNotFoundError):
+		urls.item(Item(ContentPath.parse("about"), {}, ""))
+
+
+def test_leaves_index_item_out_of_per_item_route():
+	route = Route(
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	urls = URLs([route], URL.parse("https://example.com"))
+
+	with assert_raises(RouteNotFoundError):
+		urls.item(Item(ContentPath.parse("articles"), {}, ""))
 
 
 def test_builds_path_url():
@@ -164,6 +260,6 @@ def test_builds_path_url():
 def test_builds_absolute_path_url():
 	urls = URLs([], URL.parse("https://example.com/mesa"))
 
-	url = urls.path("/writing/", absolute=True)
+	url = urls.path("/articles/", absolute=True)
 
-	assert_eq(str(url), "https://example.com/mesa/writing/")
+	assert_eq(str(url), "https://example.com/mesa/articles/")
