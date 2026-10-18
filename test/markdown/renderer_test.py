@@ -15,7 +15,7 @@ def test_renders_plain_elements():
 	)
 	item = Item.markdown(ContentPath.parse("articles/intro"), "Read *this* first.\n")
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(html, "<p>Read <em>this</em> first.</p>\n")
 
@@ -30,7 +30,7 @@ def test_passes_raw_html_through():
 		'<aside class="note">\n<script>highlight()</script>\n</aside>\n',
 	)
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(
 		html,
@@ -48,7 +48,7 @@ def test_renders_table():
 		"| Command | Effect |\n| :-- | --: |\n| `eden build` | Writes *public* |\n",
 	)
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(
 		html,
@@ -68,7 +68,7 @@ def test_renders_table_without_rows():
 	)
 	item = Item.markdown(ContentPath.parse("articles/intro"), "| Command |\n| - |\n")
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(
 		html,
@@ -86,7 +86,7 @@ def test_renders_fenced_code():
 		"```python\nimport tomllib\n```\n",
 	)
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(
 		html,
@@ -101,7 +101,7 @@ def test_renders_fenced_code_without_language():
 	)
 	item = Item.markdown(ContentPath.parse("articles/intro"), "```\neden build\n```\n")
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(html, "<pre><code>eden build\n</code></pre>\n")
 
@@ -113,7 +113,7 @@ def test_renders_indented_code_without_language():
 	)
 	item = Item.markdown(ContentPath.parse("articles/intro"), "    eden build\n")
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(html, "<pre><code>eden build\n</code></pre>\n")
 
@@ -125,7 +125,7 @@ def test_keeps_entities_in_code_as_written():
 	)
 	item = Item.markdown(ContentPath.parse("articles/intro"), "```\n&amp;\n```\n")
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(html, "<pre><code>&amp;amp;\n</code></pre>\n")
 
@@ -137,7 +137,7 @@ def test_renders_heading():
 	)
 	item = Item.markdown(ContentPath.parse("articles/intro"), "## Getting started\n")
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(html, '<h2 id="getting-started">Getting started</h2>\n')
 
@@ -152,7 +152,7 @@ def test_collects_headings():
 		"# Intro\n\n## Getting *started*\n",
 	)
 
-	_html, headings = renderer.render(item)
+	_, headings = renderer.render(item)
 
 	assert_eq(len(headings), 2)
 	assert_eq(headings[0].level, 1)
@@ -174,7 +174,7 @@ def test_numbers_repeated_heading_ids():
 		"## Setup\n\n## Setup\n",
 	)
 
-	_html, headings = renderer.render(item)
+	_, headings = renderer.render(item)
 
 	assert_eq(headings[0].id, "setup")
 	assert_eq(headings[1].id, "setup-1")
@@ -190,7 +190,7 @@ def test_numbers_repeated_heading_id_past_written_one():
 		"## Setup\n\n## Setup 1\n\n## Setup\n",
 	)
 
-	_html, headings = renderer.render(item)
+	_, headings = renderer.render(item)
 
 	assert_eq(headings[2].id, "setup-2")
 
@@ -203,7 +203,7 @@ def test_numbers_heading_ids_per_item():
 	renderer.render(Item.markdown(ContentPath.parse("articles/intro"), "## Setup\n"))
 	item = Item.markdown(ContentPath.parse("articles/outro"), "## Setup\n")
 
-	_html, headings = renderer.render(item)
+	_, headings = renderer.render(item)
 
 	assert_eq(headings[0].id, "setup")
 
@@ -215,7 +215,7 @@ def test_gives_heading_without_letters_no_id():
 	)
 	item = Item.markdown(ContentPath.parse("articles/intro"), "## ...\n")
 
-	_html, headings = renderer.render(item)
+	_, headings = renderer.render(item)
 
 	assert_is(headings[0].id, None)
 
@@ -227,7 +227,7 @@ def test_leaves_headings_without_ids_unnumbered():
 	)
 	item = Item.markdown(ContentPath.parse("articles/intro"), "## ...\n\n## ...\n")
 
-	_html, headings = renderer.render(item)
+	_, headings = renderer.render(item)
 
 	assert_is(headings[1].id, None)
 
@@ -242,7 +242,7 @@ def test_renders_footnotes():
 		"Read first.[^source]\n\n[^source]: From the manual.\n",
 	)
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(
 		html,
@@ -265,7 +265,7 @@ def test_numbers_footnotes_by_first_reference():
 		"[^aside]: An aside.\n",
 	)
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(
 		html,
@@ -288,7 +288,7 @@ def test_keeps_number_of_repeated_footnote_reference():
 		"Read[^source], then reread[^source].\n\n[^source]: From the manual.\n",
 	)
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(
 		html,
@@ -310,7 +310,7 @@ def test_drops_unreferenced_footnote():
 		"Read first.\n\n[^source]: From the manual.\n",
 	)
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(html, "<p>Read first.</p>\n")
 
@@ -327,7 +327,7 @@ def test_lists_footnote_referenced_from_footnote():
 		"[^aside]: An aside.\n",
 	)
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(
 		html,
@@ -351,7 +351,7 @@ def test_renders_link():
 		'Read [the *manual*](https://example.org/manual "Start here").\n',
 	)
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(
 		html,
@@ -370,7 +370,7 @@ def test_renders_link_without_title():
 		"[Manual](https://example.org/manual)\n",
 	)
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(html, '<p><a href="https://example.org/manual">Manual</a></p>\n')
 
@@ -385,7 +385,7 @@ def test_renders_autolink():
 		"<https://example.org/manual>\n",
 	)
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(
 		html,
@@ -410,7 +410,7 @@ def test_renders_link_to_item_through_destinations():
 	)
 	item = Item.markdown(ContentPath.parse("articles/intro"), "[Outro](outro.md)\n")
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(html, '<p><a href="/articles/outro">Outro</a></p>\n')
 
@@ -425,7 +425,7 @@ def test_renders_image_path_through_destinations():
 		"![A diagram](/diagram.png)\n",
 	)
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(html, '<p><img src="/mesa/diagram.png" alt="A diagram"></p>\n')
 
@@ -440,7 +440,7 @@ def test_renders_image():
 		'![A diagram](diagram.png "Overview")\n',
 	)
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(
 		html,
@@ -458,7 +458,7 @@ def test_renders_image_without_title():
 		"![A diagram](diagram.png)\n",
 	)
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(html, '<p><img src="diagram.png" alt="A diagram"></p>\n')
 
@@ -473,7 +473,7 @@ def test_renders_image_alt_as_plain_text():
 		"![A *simple* diagram &amp; `key`](diagram.png)\n",
 	)
 
-	html, _headings = renderer.render(item)
+	html, _ = renderer.render(item)
 
 	assert_eq(
 		html,

@@ -13,7 +13,7 @@ from .routing import URLs
 
 @dataclass
 class Site:
-	"""The model of a site, read from its driver."""
+	"""A single site, including all its resources."""
 
 	config: Config
 	items: dict[ContentPath, Item]
