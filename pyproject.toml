@@ -7,7 +7,6 @@ dependencies = [
 	"helios-assets",
 	"helios-url",
 	"helios-view",
-	"jinja2>=3.1.6",
 	"luna",
 	"marko>=2.2.4",
 	"markupsafe>=3.0.4",

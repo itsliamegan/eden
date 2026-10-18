@@ -1,8 +1,7 @@
 from pathlib import Path
 
 from helios.assets import BundlerNotFoundError, CompileError, EntryNotFoundError
-from helios.view import ComponentError
-from jinja2 import TemplateError
+from helios.view import ComponentError, TemplateError
 from luna.cli import Command, argument
 
 from ..config import Config, ConfigError
