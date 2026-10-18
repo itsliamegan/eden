@@ -125,7 +125,7 @@ wheels = [
 [[package]]
 name = "luna"
 version = "0.1.0"
-source = { git = "https://github.com/itsliamegan/luna?branch=main#1d2ee20ff1546ace26eae6d231c06927f57e423e" }
+source = { git = "https://github.com/itsliamegan/luna?branch=main#36c6d9ada8c8383cc17c0900904394607536b7aa" }
 
 [[package]]
 name = "marko"
