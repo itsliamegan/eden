@@ -11,11 +11,7 @@ from .error import DuplicateFileError
 
 
 class Driver(Driver):
-	"""The resources of a site held in files.
-
-	It reads a site's src directory and writes the site's public directory.
-	Writing never replaces a file.
-	"""
+	"""The resources of a site accessed on disk."""
 
 	def __init__(self, root: Path):
 		self.root = root
@@ -58,62 +54,8 @@ class Driver(Driver):
 	def views(self) -> file.Driver:
 		return file.Driver(Path(self.root, "src", "views"))
 
-	def empty(self):
-		self.public.mkdir(parents=True, exist_ok=True)
-		for child in self.public.iterdir():
-			if child.is_dir() and not child.is_symlink():
-				shutil.rmtree(child)
-			else:
-				child.unlink()
-
-	def compile(
-		self,
-		scripts: list[str],
-		styles: list[str],
-		*,
-		minify: bool,
-		sourcemap: bool,
-	) -> Manifest:
-		compiled = Bundler(self.root).compile(
-			self.assets,
-			Path(self.public, "assets"),
-			scripts,
-			styles,
-			minify=minify,
-			sourcemap=sourcemap,
-		)
-		return compiled.manifest
-
-	def write(self, documents: list[Document]):
-		for document in documents:
-			relative = document.path.lstrip("/")
-			if document.path.endswith("/"):
-				target = Path(self.public, relative, "index.html")
-			elif "." in Path(relative).name:
-				target = Path(self.public, relative)
-			else:
-				target = Path(self.public, f"{relative}.html")
-
-			if target.exists():
-				raise DuplicateFileError(f"duplicate file: {target}")
-
-			target.parent.mkdir(parents=True, exist_ok=True)
-			target.write_text(document.text)
-
-	def copy(self):
-		for source in sorted(self.static.rglob("*")):
-			if not source.is_file():
-				continue
-
-			target = Path(self.public, source.relative_to(self.static))
-			if target.exists():
-				raise DuplicateFileError(f"duplicate file: {target}")
-
-			target.parent.mkdir(parents=True, exist_ok=True)
-			shutil.copy2(source, target)
-
 	def read(self, directory: Path) -> list[Item]:
-		"""Read the items of a directory's visible files, in order of name."""
+		"""Read the items of a directory's files, ignoring hidden files, in name order."""
 		sources = []
 		for source in directory.iterdir():
 			if source.is_file() and not source.name.startswith("."):
@@ -139,3 +81,58 @@ class Driver(Driver):
 			else:
 				items.append(Item.toml(path, source.read_text()))
 		return items
+
+	def write(self, documents: list[Document]):
+		for document in documents:
+			relative = document.path.lstrip("/")
+			if document.path.endswith("/"):
+				target = Path(self.public, relative, "index.html")
+			elif "." in Path(relative).name:
+				target = Path(self.public, relative)
+			else:
+				target = Path(self.public, f"{relative}.html")
+
+			if target.exists():
+				raise DuplicateFileError(f"duplicate file: {target}")
+
+			target.parent.mkdir(parents=True, exist_ok=True)
+			target.write_text(document.text)
+
+	def compile(
+		self,
+		scripts: list[str],
+		styles: list[str],
+		*,
+		minify: bool,
+		sourcemap: bool,
+	) -> Manifest:
+		compiled = Bundler(self.root).compile(
+			self.assets,
+			Path(self.public, "assets"),
+			scripts,
+			styles,
+			minify=minify,
+			sourcemap=sourcemap,
+		)
+		return compiled.manifest
+
+	def copy(self):
+		"""Copy the static files from the source directory to the public directory."""
+		for source in sorted(self.static.rglob("*")):
+			if not source.is_file():
+				continue
+
+			target = Path(self.public, source.relative_to(self.static))
+			if target.exists():
+				raise DuplicateFileError(f"duplicate file: {target}")
+
+			target.parent.mkdir(parents=True, exist_ok=True)
+			shutil.copy2(source, target)
+
+	def empty(self):
+		self.public.mkdir(parents=True, exist_ok=True)
+		for child in self.public.iterdir():
+			if child.is_dir() and not child.is_symlink():
+				shutil.rmtree(child)
+			else:
+				child.unlink()
