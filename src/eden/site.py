@@ -17,7 +17,6 @@ from .routing.route import PerItemExpansion, SingleExpansion
 class Site:
 	"""A single site, including all its resources."""
 
-	config: Config
 	engine: Engine
 	items: dict[ContentPath, Item]
 	collections: dict[ContentPath, Collection]
@@ -84,7 +83,7 @@ class Site:
 							Page(route.path.path({"name": item.name}), route, item)
 						)
 
-		return cls(config, engine, items, collections, pages)
+		return cls(engine, items, collections, pages)
 
 	def build(self) -> list[Document]:
 		paths = set()
