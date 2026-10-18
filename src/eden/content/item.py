@@ -1,10 +1,15 @@
 from dataclasses import dataclass
 import re
 import tomllib
-from typing import Any, Self
+from typing import Any, Self, TYPE_CHECKING
+
+from markupsafe import Markup
 
 from .error import ContentError
 from .path import ContentPath
+
+if TYPE_CHECKING:
+	from ..markdown import Heading
 
 FRONT_MATTER = re.compile(r"\+\+\+\n(.*?)^\+\+\+$\n?", re.DOTALL | re.MULTILINE)
 
@@ -14,12 +19,14 @@ class Item:
 	"""A file in a site's content.
 
 	An Item's name is its path's last segment. Two items are equal if their
-	paths are equal.
+	paths are equal. Its body and headings are rendered by its site.
 	"""
 
 	path: ContentPath
 	fields: dict[str, Any]
 	text: str
+	body: Markup | None = None
+	headings: list[Heading] | None = None
 
 	@classmethod
 	def markdown(cls, path: ContentPath, text: str) -> Self:

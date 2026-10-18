@@ -1,5 +1,5 @@
 from helios.assets import Manifest
-from helios.url import URL
+from helios.url import Pattern, URL
 from luna.test.assertion import assert_eq, assert_is, assert_raises
 
 from eden.config import Config
@@ -12,6 +12,9 @@ from eden.content import (
 	Order,
 )
 from eden.driver import memory
+from eden.markdown import MarkdownError
+from eden.routing import Route
+from eden.routing.route import PerItemExpansion
 from eden.site import Site
 
 
@@ -159,3 +162,81 @@ def test_raises_on_order_for_missing_collection():
 
 	with assert_raises(ContentNotFoundError):
 		Site.read(config, Manifest({}, {}), memory.Driver())
+
+
+def test_renders_item_bodies():
+	intro = Item.markdown(ContentPath.parse("articles/intro"), "Read *this* first.\n")
+	Site.read(
+		Config(URL.parse("https://example.com"), [], [], [], {}),
+		Manifest({}, {}),
+		memory.Driver(
+			collections=[Collection(ContentPath.parse("articles"), Items([intro]))],
+		),
+	)
+
+	assert_eq(intro.body, "<p>Read <em>this</em> first.</p>\n")
+
+
+def test_collects_item_headings():
+	intro = Item.markdown(ContentPath.parse("articles/intro"), "# Setup\n")
+	Site.read(
+		Config(URL.parse("https://example.com"), [], [], [], {}),
+		Manifest({}, {}),
+		memory.Driver(
+			collections=[Collection(ContentPath.parse("articles"), Items([intro]))],
+		),
+	)
+
+	assert intro.headings is not None
+	assert_eq(intro.headings[0].id, "setup")
+
+
+def test_links_items_by_their_pages():
+	intro = Item.markdown(ContentPath.parse("articles/intro"), "[Outro](outro.md)\n")
+	outro = Item.markdown(ContentPath.parse("articles/outro"), "")
+	route = Route(
+		"article",
+		Pattern.parse("/articles/{name}"),
+		"articles/show",
+		PerItemExpansion(ContentPath.parse("articles")),
+	)
+	Site.read(
+		Config(URL.parse("https://example.com"), [], [], [route], {}),
+		Manifest({}, {}),
+		memory.Driver(
+			collections=[
+				Collection(ContentPath.parse("articles"), Items([intro, outro])),
+			],
+		),
+	)
+
+	assert_eq(intro.body, '<p><a href="/articles/outro">Outro</a></p>\n')
+
+
+def test_renders_bodies_through_site_component_templates():
+	intro = Item.markdown(ContentPath.parse("articles/intro"), "[Manual](/manual)\n")
+	Site.read(
+		Config(URL.parse("https://example.com"), [], [], [], {}),
+		Manifest({}, {}),
+		memory.Driver(
+			collections=[Collection(ContentPath.parse("articles"), Items([intro]))],
+			views={
+				"components/markdown/link": (
+					'<a class="link" href="{{ href }}">{{ content }}</a>'
+				),
+			},
+		),
+	)
+
+	assert_eq(intro.body, '<p><a class="link" href="/manual">Manual</a></p>\n')
+
+
+def test_raises_on_body_linking_to_missing_item():
+	intro = Item.markdown(ContentPath.parse("articles/intro"), "[Outro](outro.md)\n")
+	config = Config(URL.parse("https://example.com"), [], [], [], {})
+	driver = memory.Driver(
+		collections=[Collection(ContentPath.parse("articles"), Items([intro]))],
+	)
+
+	with assert_raises(MarkdownError):
+		Site.read(config, Manifest({}, {}), driver)

@@ -1,11 +1,14 @@
 from dataclasses import dataclass
 from typing import Self
 
-from helios.assets import Manifest
+from helios.assets import Assets, Manifest
+from helios.view import Engine, Helpers, file
 
 from .config import Config
 from .content import Collection, ContentNotFoundError, ContentPath, Item
 from .driver import Driver
+from .markdown import Destinations, Renderer, VIEWS_DIR
+from .routing import URLs
 
 
 @dataclass
@@ -40,6 +43,18 @@ class Site:
 				items[item.path] = item
 			if collection.index is not None:
 				items[collection.index.path] = collection.index
+
+		urls = URLs(config.routes, config.base_url)
+		assets = Assets(manifest, urls.path("/assets/").path)
+		engine = Engine(
+			driver.views(),
+			helpers=Helpers(globals={"urls": urls, "assets": assets}),
+			fallbacks=[file.Driver(VIEWS_DIR)],
+		)
+
+		renderer = Renderer(engine, Destinations(urls, items))
+		for item in items.values():
+			item.body, item.headings = renderer.render(item)
 
 		return cls(config, items, collections)
 
