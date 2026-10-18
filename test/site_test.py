@@ -17,10 +17,10 @@ from eden.site import Site
 
 def test_finds_top_level_item():
 	about = Item(ContentPath.parse("about"), {}, "")
-	site = Site(
+	site = Site.read(
 		Config(URL.parse("https://example.com"), [], [], [], {}),
-		memory.Driver(items=[about]),
 		Manifest({}, {}),
+		memory.Driver(items=[about]),
 	)
 
 	assert_is(site.item("about"), about)
@@ -28,12 +28,12 @@ def test_finds_top_level_item():
 
 def test_finds_collection_item():
 	intro = Item(ContentPath.parse("articles/intro"), {}, "")
-	site = Site(
+	site = Site.read(
 		Config(URL.parse("https://example.com"), [], [], [], {}),
+		Manifest({}, {}),
 		memory.Driver(
 			collections=[Collection(ContentPath.parse("articles"), Items([intro]))],
 		),
-		Manifest({}, {}),
 	)
 
 	assert_is(site.item("articles/intro"), intro)
@@ -41,22 +41,22 @@ def test_finds_collection_item():
 
 def test_finds_index_item():
 	index = Item(ContentPath.parse("articles"), {}, "")
-	site = Site(
+	site = Site.read(
 		Config(URL.parse("https://example.com"), [], [], [], {}),
+		Manifest({}, {}),
 		memory.Driver(
 			collections=[Collection(ContentPath.parse("articles"), Items([]), index)],
 		),
-		Manifest({}, {}),
 	)
 
 	assert_is(site.item("articles"), index)
 
 
 def test_raises_on_missing_item():
-	site = Site(
+	site = Site.read(
 		Config(URL.parse("https://example.com"), [], [], [], {}),
-		memory.Driver(),
 		Manifest({}, {}),
+		memory.Driver(),
 	)
 
 	with assert_raises(ContentNotFoundError):
@@ -65,20 +65,20 @@ def test_raises_on_missing_item():
 
 def test_finds_collection():
 	articles = Collection(ContentPath.parse("articles"), Items([]))
-	site = Site(
+	site = Site.read(
 		Config(URL.parse("https://example.com"), [], [], [], {}),
-		memory.Driver(collections=[articles]),
 		Manifest({}, {}),
+		memory.Driver(collections=[articles]),
 	)
 
 	assert_is(site.collection("articles"), articles)
 
 
 def test_raises_on_missing_collection():
-	site = Site(
+	site = Site.read(
 		Config(URL.parse("https://example.com"), [], [], [], {}),
-		memory.Driver(),
 		Manifest({}, {}),
+		memory.Driver(),
 	)
 
 	with assert_raises(ContentNotFoundError):
@@ -88,7 +88,7 @@ def test_raises_on_missing_collection():
 def test_sorts_collection_by_its_order():
 	intro = Item(ContentPath.parse("articles/intro"), {"position": 1}, "")
 	outro = Item(ContentPath.parse("articles/outro"), {"position": 2}, "")
-	site = Site(
+	site = Site.read(
 		Config(
 			URL.parse("https://example.com"),
 			[],
@@ -96,12 +96,12 @@ def test_sorts_collection_by_its_order():
 			[],
 			{ContentPath.parse("articles"): Order("position", "asc")},
 		),
+		Manifest({}, {}),
 		memory.Driver(
 			collections=[
 				Collection(ContentPath.parse("articles"), Items([outro, intro])),
 			],
 		),
-		Manifest({}, {}),
 	)
 
 	assert_eq(list(site.collection("articles")), [intro, outro])
@@ -110,7 +110,7 @@ def test_sorts_collection_by_its_order():
 def test_sorts_collection_in_descending_order():
 	intro = Item(ContentPath.parse("articles/intro"), {"position": 1}, "")
 	outro = Item(ContentPath.parse("articles/outro"), {"position": 2}, "")
-	site = Site(
+	site = Site.read(
 		Config(
 			URL.parse("https://example.com"),
 			[],
@@ -118,12 +118,12 @@ def test_sorts_collection_in_descending_order():
 			[],
 			{ContentPath.parse("articles"): Order("position", "desc")},
 		),
+		Manifest({}, {}),
 		memory.Driver(
 			collections=[
 				Collection(ContentPath.parse("articles"), Items([intro, outro])),
 			],
 		),
-		Manifest({}, {}),
 	)
 
 	assert_eq(list(site.collection("articles")), [outro, intro])
@@ -131,7 +131,7 @@ def test_sorts_collection_in_descending_order():
 
 def test_keeps_index_item_of_sorted_collection():
 	index = Item(ContentPath.parse("articles"), {}, "")
-	site = Site(
+	site = Site.read(
 		Config(
 			URL.parse("https://example.com"),
 			[],
@@ -139,10 +139,10 @@ def test_keeps_index_item_of_sorted_collection():
 			[],
 			{ContentPath.parse("articles"): Order("position", "asc")},
 		),
+		Manifest({}, {}),
 		memory.Driver(
 			collections=[Collection(ContentPath.parse("articles"), Items([]), index)],
 		),
-		Manifest({}, {}),
 	)
 
 	assert_is(site.item("articles"), index)
@@ -158,4 +158,4 @@ def test_raises_on_order_for_missing_collection():
 	)
 
 	with assert_raises(ContentNotFoundError):
-		Site(config, memory.Driver(), Manifest({}, {}))
+		Site.read(config, Manifest({}, {}), memory.Driver())
