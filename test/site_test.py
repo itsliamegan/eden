@@ -16,7 +16,7 @@ from eden.driver import memory
 from eden.markdown import MarkdownError
 from eden.routing import Route
 from eden.routing.route import PerItemExpansion, SingleExpansion
-from eden.site import DocumentError, Site, ViewNotFoundError
+from eden.site import DuplicateDocumentError, Site, ViewNotFoundError
 
 
 def test_finds_top_level_item():
@@ -456,5 +456,5 @@ def test_raises_on_two_documents_at_one_path():
 		memory.Driver(views={"home": "Welcome"}),
 	)
 
-	with assert_raises(DocumentError):
+	with assert_raises(DuplicateDocumentError):
 		site.build()

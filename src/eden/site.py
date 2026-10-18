@@ -18,10 +18,10 @@ class Site:
 	"""A single site, including all its resources."""
 
 	config: Config
+	engine: Engine
 	items: dict[ContentPath, Item]
 	collections: dict[ContentPath, Collection]
 	pages: list[Page]
-	engine: Engine
 
 	@classmethod
 	def read(cls, config: Config, manifest: Manifest, driver: Driver) -> Self:
@@ -84,13 +84,13 @@ class Site:
 							Page(route.path.path({"name": item.name}), route, item)
 						)
 
-		return cls(config, items, collections, pages, engine)
+		return cls(config, engine, items, collections, pages)
 
 	def build(self) -> list[Document]:
 		paths = set()
 		for page in self.pages:
 			if page.path in paths:
-				raise DocumentError(f"duplicate document path: {page.path}")
+				raise DuplicateDocumentError(f"duplicate document path: {page.path}")
 			paths.add(page.path)
 
 		documents = []
@@ -119,5 +119,5 @@ class ViewNotFoundError(LookupError):
 	pass
 
 
-class DocumentError(ValueError):
+class DuplicateDocumentError(ValueError):
 	pass
